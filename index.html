@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZO Packeta Slovakia</title>
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1B3A5C;
+    --navy-deep: #12293F;
+    --coral: #E1594B;
+    --paper: #F7F4EE;
+    --line: rgba(27, 58, 92, 0.14);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--navy);
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+    position: relative;
+  }
+
+
+
+  /* Decorative bubble tail, echoing the mark's dialogue motif */
+  .tail {
+    position: absolute;
+    width: 620px;
+    height: 620px;
+    border-radius: 46% 54% 58% 42% / 50% 45% 55% 50%;
+    opacity: 0.05;
+    pointer-events: none;
+  }
+  .tail--navy {
+    background: var(--navy);
+    top: -180px;
+    left: -200px;
+  }
+  .tail--coral {
+    background: var(--coral);
+    bottom: -220px;
+    right: -180px;
+  }
+
+  .stage {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 32px;
+    max-width: 640px;
+  }
+
+  .logo-mark {
+    height: 68px;
+    width: auto;
+    margin-bottom: 44px;
+  }
+
+  .rule {
+    width: 46px;
+    height: 3px;
+    background: var(--coral);
+    border-radius: 2px;
+    margin-bottom: 28px;
+  }
+
+  .headline {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 800;
+    font-size: clamp(3.2rem, 12vw, 6.4rem);
+    line-height: 0.95;
+    margin: 0 0 20px 0;
+    color: var(--navy-deep);
+    letter-spacing: -0.01em;
+  }
+
+  .subline {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--navy);
+    opacity: 0.72;
+    max-width: 30ch;
+    margin: 0;
+    font-weight: 500;
+  }
+
+  footer {
+    position: absolute;
+    bottom: 28px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--navy);
+    opacity: 0.42;
+    letter-spacing: 0.01em;
+  }
+
+  @media (max-width: 480px) {
+    .logo-mark { height: 48px; margin-bottom: 32px; }
+    .subline { font-size: 0.95rem; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="tail tail--navy"></div>
+  <div class="tail tail--coral"></div>
+
+  <main class="stage">
+    <img class="logo-mark" src="logo.png" alt="ZO Packeta Slovakia">
+    <div class="rule"></div>
+    <h1 class="headline">čoskoro</h1>
+    <p class="subline">Pripravujeme novú webovú stránku odborovej organizácie ZO Packeta Slovakia.</p>
+  </main>
+
+  <footer>ZO Packeta Slovakia</footer>
+
+</body>
+</html>
