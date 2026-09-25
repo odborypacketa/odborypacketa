@@ -2,3 +2,7 @@
 fieldset{border:0;padding:0;margin:0;min-width:0}
 
 .join .email-link{color:white}.contact-address{font-style:normal;margin:16px 0}
+
+.legal{overflow-wrap:anywhere}.legal .eyebrow{margin-top:40px}.legal h2{font-size:28px;margin-top:40px;letter-spacing:-.5px}.legal-note{background:var(--pale);padding:24px;border-radius:16px;margin:24px 0}.legal-note p{margin:16px 0 0}.legal li{margin-bottom:12px}.legal hr{border:0;border-top:1px solid var(--pale);margin:40px 0}
+
+.retention dt{font-weight:700;color:var(--navy);margin-top:24px}.retention dd{margin:8px 0 24px;padding-bottom:24px;border-bottom:1px solid var(--pale)}
