@@ -22,3 +22,23 @@ form?.addEventListener('reset',()=>{out.replaceChildren();document.querySelector
 window.addEventListener('pagehide',()=>{form?.reset();out?.replaceChildren();});
 window.addEventListener('pageshow',e=>{if(e.persisted){form?.reset();out?.replaceChildren();}});
 document.querySelector('#application-fields')?.removeAttribute('disabled');
+
+// Keep the original image link as a fallback when dialogs are unavailable.
+const qrPreview=document.querySelector('.qr-preview');
+const qrDialog=document.querySelector('#qr-dialog');
+if(qrPreview&&qrDialog&&typeof qrDialog.showModal==='function'){
+  qrPreview.setAttribute('aria-haspopup','dialog');
+  qrPreview.addEventListener('click',event=>{
+    event.preventDefault();qrDialog.showModal();
+    document.body.classList.add('qr-modal-open');
+    qrDialog.querySelector('.qr-close').focus();
+  });
+  qrDialog.querySelector('.qr-close').addEventListener('click',()=>qrDialog.close());
+  qrDialog.addEventListener('click',event=>{
+    const bounds=qrDialog.getBoundingClientRect();
+    if(event.target===qrDialog&&(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom))qrDialog.close();
+  });
+  qrDialog.addEventListener('close',()=>{
+    document.body.classList.remove('qr-modal-open');qrPreview.focus({preventScroll:true});
+  });
+}
