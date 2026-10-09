@@ -1,3 +1,7 @@
+# E-mailové preposielanie
+
+Pripravené pre info@odborypacketa.eu. Doplňte RESEND_API_KEY (Secret) a CONTACT_FROM_EMAIL (Variable s overenou adresou). Celý postup a obmedzenia sú v [PREPOSIELANIE.md](PREPOSIELANIE.md). Preposielanie zatiaľ nie je aktívne; ostatné nastavenia prijímača zostávajú povinné.
+
 # Nasadenie v odborypacketa/odborypacketa
 
 Tento balík je prispôsobený existujúcemu webu. Priečinok `odboracik/` je verejná statická verzia s vypnutým odosielaním; `odborovy-asistent-web/` je zdroj pre automatické zostavenie. Aktualizácie zdrojov spravujte tam.
@@ -19,8 +23,8 @@ Pripravený zdrojový balík pre ZO Packeta Slovakia. Zachováva logo, farebnos�
 - Cloudflare Worker validuje obsah, pôvod stránky a Turnstile token na serveri. Povoľuje iba `https://www.odborypacketa.eu`.
 - D1 uchováva obsah formulára šifrovaný AES-GCM. Časy a náhodné ID zostávajú čitateľné. Worker počas prijatia a oprávneného exportu vidí obsah; nejde o koncové šifrovanie.
 - Export a výmaz vyžadujú administrátorský token; token sa nikdy neposiela do webovej konfigurácie. Nejde o plnohodnotný systém viacerých používateľov a auditovaných rolí.
-- Doba uchovania je povinná konfigurácia prevádzkovateľa. Každodenný serverový úkon odstraňuje expirované záznamy zo živej databázy; zo záloh ani externých exportov ich okamžite neodstráni.
-- Formulár neposiela e-mailové upozornenia. Určená osoba musí evidenciu pravidelne kontrolovať. Kontaktný e-mail sa nevymýšľa.
+- Doba uchovania je povinná konfigurácia prevádzkovateľa. Serverový úkon každých päť minút odstraňuje expirované záznamy zo živej databázy; zo záloh ani externých exportov ich okamžite neodstráni.
+- Formulár má pripravené preposielanie na info@odborypacketa.eu cez Resend; aktivácia a stavové potvrdenia sú v PREPOSIELANIE.md. Určená osoba musí evidenciu pravidelne kontrolovať. Kontaktný e-mail sa nevymýšľa.
 - GitHub automaticky kontroluje zmeny, zostaví web a po nastavení nasadí web aj prijímač. Dotazy sa neukladajú do GitHub Issues, repozitára ani workflow artefaktov.
 
 ## Jednorazové pripojenie
@@ -82,10 +86,11 @@ node --test tests/*.test.mjs
 node --check odborovy-asistent-web/app.js
 ```
 
-Prešlo 22 automatických testov s lokálnou SQLite databázou a simuláciou Turnstile. Pokrývajú šifrovanie, validáciu, neoprávnený prístup, výpadky, duplicitné podania, uchovanie, výmaz aj správanie formulára. GitHub Actions ani živé Cloudflare nasadenie neboli spustené; chýbajú údaje účtov a repozitár. Vizuálne overenie v prehliadači nebolo dostupné. Právny obsah 28 tém bol zachovaný, nie nanovo právne overený.
+Prešlo 28 automatických testov s lokálnou SQLite databázou a simuláciou Turnstile. Pokrývajú šifrovanie, validáciu, neoprávnený prístup, výpadky, duplicitné podania, uchovanie, výmaz aj správanie formulára. GitHub Actions ani živé Cloudflare nasadenie neboli spustené; chýbajú údaje účtov a repozitár. Vizuálne overenie v prehliadači nebolo dostupné. Právny obsah 28 tém bol zachovaný, nie nanovo právne overený.
 
 Po nasadení otestujte vymyslené podanie na skutočnej doméne: uloženie → zobrazenie cez oprávnený export → opakovanie → výmaz. Overte aj zamietnutie iného pôvodu a zobrazenie chyby pri nedostupnej službe. Prečítajte informácie o spracúvaní a o použití Turnstile.
 
 ## Technické podklady
 
 Použité rozhrania: [Cloudflare GitHub Actions](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/), [D1 prepared statements](https://developers.cloudflare.com/d1/worker-api/prepared-statements/), [Web Crypto](https://developers.cloudflare.com/workers/runtime-apis/web-crypto/), [Turnstile server validation](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/), [tajomstvá pri nasadení](https://developers.cloudflare.com/workers/configuration/secrets/). Workflow používa Wrangler 4; pred produkčným použitím možno uzamknúť konkrétnu overenú verziu podľa prostredia prevádzkovateľa.
+

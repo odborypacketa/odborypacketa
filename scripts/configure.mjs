@@ -9,9 +9,11 @@ if (process.argv[2] === 'backend') {
   if (env.PRIVACY_READY !== 'true') throw new Error('Najprv dokončite informácie o spracúvaní údajov.');
   const name = env.WORKER_NAME || 'odboracik-prijimac';
   if (!/^[a-z0-9-]{1,63}$/.test(name)) throw new Error('Neplatný názov Worker');
-  const secrets = { TURNSTILE_SECRET_KEY: req('TURNSTILE_SECRET_KEY'), ADMIN_TOKEN: req('ADMIN_TOKEN'), DATA_ENCRYPTION_KEY: req('DATA_ENCRYPTION_KEY') };
+  const fromEmail = req('CONTACT_FROM_EMAIL');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fromEmail)) throw new Error('Neplatný overený odosielateľ');
+  const secrets = { TURNSTILE_SECRET_KEY: req('TURNSTILE_SECRET_KEY'), ADMIN_TOKEN: req('ADMIN_TOKEN'), RESEND_API_KEY: req('RESEND_API_KEY'), DATA_ENCRYPTION_KEY: req('DATA_ENCRYPTION_KEY') };
   if (secrets.ADMIN_TOKEN.length < 32 || Buffer.from(secrets.DATA_ENCRYPTION_KEY, 'base64').length !== 32) throw new Error('Neplatná dĺžka kľúča');
-  await writeFile('backend/wrangler.json', JSON.stringify({ name, main: 'worker.mjs', compatibility_date: '2026-10-09', workers_dev: true, observability: { enabled: false }, vars: { ALLOWED_ORIGIN: 'https://www.odborypacketa.eu', RETENTION_DAYS: String(days), PRIVACY_READY: 'true' }, d1_databases: [{ binding: 'DB', database_name: 'odboracik-dotazy', database_id: id }], triggers: { crons: ['0 3 * * *'] } }, null, 2));
+  await writeFile('backend/wrangler.json', JSON.stringify({ name, main: 'worker.mjs', compatibility_date: '2026-10-09', workers_dev: true, observability: { enabled: false }, vars: { ALLOWED_ORIGIN: 'https://www.odborypacketa.eu', RETENTION_DAYS: String(days), PRIVACY_READY: 'true', CONTACT_FROM_EMAIL: fromEmail }, d1_databases: [{ binding: 'DB', database_name: 'odboracik-dotazy', database_id: id }], triggers: { crons: ['*/5 * * * *'] } }, null, 2));
   await writeFile(req('SECRETS_FILE'), JSON.stringify(secrets), { mode: 0o600 });
 } else if (process.argv[2] === 'web') {
   const cfg = { queryEndpoint: env.QUERY_ENDPOINT || '', privacyUrl: env.PRIVACY_URL || '', turnstileSiteKey: env.TURNSTILE_SITE_KEY || '', internalStorageEnabled: false };

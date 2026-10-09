@@ -94,7 +94,9 @@ contactForm.addEventListener('submit', async event => {
     const result = await response.json();
     if (!response.ok || result.ok !== true || result.id !== id) throw new Error('Unconfirmed');
     contactForm.reset(); pendingSubmission = null;
-    status.textContent = `Dotaz bol prijatý do evidencie odborov. Číslo podania: ${id}.`;
+    status.textContent = result.mailStatus === 'sent'
+      ? `Dotaz je v evidencii a e-mailová služba prijala správu pre info@odborypacketa.eu. Číslo podania: ${id}.`
+      : `Dotaz bol prijatý do evidencie. E-mail na info@odborypacketa.eu zatiaľ nebol potvrdený; odbory ho môžu skontrolovať v evidencii. Číslo podania: ${id}.`;
   } catch {
     status.textContent = 'Prijatie dotazu sa nepodarilo potvrdiť. Text zostal vo formulári. Zopakujte overenie a skúste odoslať znova; rovnaké podanie sa neuloží dvakrát.';
   } finally {

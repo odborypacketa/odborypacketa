@@ -17,7 +17,7 @@ beforeEach(() => {
 afterEach(() => { globalThis.fetch = originalFetch; db.close(); });
 test('encrypted storage and server-confirmed ID; authorized export decrypts it', async () => {
   const input = data(), response = await submit(input);
-  assert.equal(response.status, 201); assert.deepEqual(await response.json(), { ok: true, id: input.id });
+  assert.equal(response.status, 201); assert.deepEqual(await response.json(), { ok: true, id: input.id, mailStatus: "pending" });
   const row = db.prepare('SELECT * FROM queries').get();
   assert.ok(!JSON.stringify(row).includes(input.email)); assert.ok(!JSON.stringify(row).includes(input.message));
   assert.equal((await (await admin()).json()).records[0].message, input.message);
@@ -72,4 +72,41 @@ test('database failure never acknowledges success', async () => {
 });
 test('tampered ciphertext fails export', async () => {
   await submit(data()); db.prepare('UPDATE queries SET ciphertext = ?').run('AAAA'); assert.equal((await admin()).status, 503);
+});
+function mailSetup(send) {
+  env.RESEND_API_KEY = 'test-resend-key'; env.CONTACT_FROM_EMAIL = 'sender@example.invalid';
+  globalThis.fetch = async (url, options) => url.includes('siteverify') ? Response.json({success:true,hostname:'www.odborypacketa.eu',action:'contact'}) : send(options);
+}
+test('mail forwards only to fixed inbox and replies go to submitter; retries do not send again', async () => {
+  let calls = []; mailSetup(options => { calls.push(options); return Response.json({id:'provider-test-id'}); });
+  const input = data(); const result = await (await submit(input)).json();
+  assert.equal(result.mailStatus,'sent'); const mail = JSON.parse(calls[0].body);
+  assert.deepEqual(mail.to,['info@odborypacketa.eu']); assert.equal(mail.reply_to,input.email); assert.ok(mail.text.includes(input.message)); assert.equal(calls[0].headers['Idempotency-Key'],`odboracik/${input.id}`);
+  await submit(input); assert.equal(calls.length,1);
+});
+test('email outage preserves accepted query; scheduled retry uses same key and sends once', async () => {
+  let calls=[]; mailSetup(options=> { calls.push(options); return calls.length === 1 ? Response.json({error:'outage'},{status:503}) : Response.json({id:'retry-id'}); });
+  const input=data(); assert.equal((await (await submit(input)).json()).mailStatus,'pending');
+  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM queries').get().n,1);
+  db.prepare('UPDATE mail_outbox SET next_attempt_at = ?').run('2000-01-01T00:00:00.000Z');
+  await worker.scheduled({},env); assert.equal(db.prepare('SELECT status FROM mail_outbox').get().status,'sent');
+  assert.equal(calls[0].headers['Idempotency-Key'],calls[1].headers['Idempotency-Key']); assert.equal(calls[0].body,calls[1].body);
+  await worker.scheduled({},env); assert.equal(calls.length,2);
+});
+test('concurrent mail requests respect durable send lease', async () => {
+  let release, calls=0; const gate=new Promise(resolve=>release=resolve);
+  mailSetup(async ()=>{calls++; await gate; return Response.json({id:'lease-id'});});
+  const input=data(); const first=submit(input);
+  while(!calls) await new Promise(resolve=>setImmediate(resolve));
+  assert.equal((await (await submit(input)).json()).mailStatus,'sending');
+  release(); await first; assert.equal(calls,1);
+});
+test('retry window expiry requires review and does not blindly resend', async () => {
+  let calls=0; mailSetup(()=>{calls++;return Response.json({error:'outage'},{status:503});});
+  await submit(data()); db.prepare('UPDATE mail_outbox SET retry_until = ?, next_attempt_at = ?').run('2000-01-01T00:00:00.000Z','2000-01-01T00:00:00.000Z');
+  await worker.scheduled({},env); assert.equal(calls,1); assert.equal(db.prepare('SELECT status FROM mail_outbox').get().status,'failed');
+  assert.equal((await (await admin()).json()).records[0].mailStatus,'failed');
+});
+test('unconfirmed provider response never claims email was sent', async () => {
+  mailSetup(()=>Response.json({ok:true})); assert.equal((await (await submit(data())).json()).mailStatus,'pending');
 });

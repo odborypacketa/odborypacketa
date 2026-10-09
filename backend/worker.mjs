@@ -1,3 +1,4 @@
+import { enqueueMail, forwardMail, retryMail } from './mail.mjs';
 const topics = ['Mzda alebo pracovný čas', 'Pracovné podmienky / BOZP', 'Komunikácia alebo konflikt', 'Skončenie pracovného pomeru', 'Členstvo alebo spolupráca', 'Iné'];
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const enc = new TextEncoder();
@@ -74,7 +75,9 @@ async function handler(request, env) {
     await env.DB.prepare('INSERT INTO queries (id, created_at, expires_at, iv, ciphertext) VALUES (?, ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING').bind(data.id, now.toISOString(), expiry, encrypted.iv, encrypted.ciphertext).run();
     const row = await env.DB.prepare('SELECT * FROM queries WHERE id = ?').bind(data.id).first();
     if (!row || JSON.stringify(await decrypt(row, env)) !== JSON.stringify(payload)) return respond({ error: 'Identifikátor patrí inému podaniu.' }, 409);
-    return respond({ ok: true, id: row.id }, 201);
+    await enqueueMail(row, env);
+    const mailStatus = await forwardMail(row, payload, env);
+    return respond({ ok: true, id: row.id, mailStatus }, 201);
   }
   if (url.pathname.startsWith('/api/admin/')) {
     // No admin token in frontend/config; no browser access from foreign origins.
@@ -88,11 +91,12 @@ async function handler(request, env) {
       const cursor = url.searchParams.get('after') || '';
       if (cursor && !uuid.test(cursor)) return respond({ error: 'Neplatný kurzor.' }, 400);
       const { results } = await env.DB.prepare('SELECT * FROM queries WHERE expires_at > ? AND id > ? ORDER BY id LIMIT 100').bind(new Date().toISOString(), cursor).all();
-      const records = await Promise.all(results.map(async row => ({ id: row.id, createdAt: row.created_at, expiresAt: row.expires_at, ...await decrypt(row, env) })));
+      const records = await Promise.all(results.map(async row => ({ id: row.id, createdAt: row.created_at, expiresAt: row.expires_at, ...await decrypt(row, env), mailStatus: (await env.DB.prepare('SELECT status FROM mail_outbox WHERE id = ?').bind(row.id).first())?.status || 'pending' })));
       return respond({ records, next: results.length === 100 ? results.at(-1).id : null });
     }
     const id = url.pathname.slice('/api/admin/queries/'.length);
     if (url.pathname.startsWith('/api/admin/queries/') && request.method === 'DELETE' && uuid.test(id)) {
+      await env.DB.prepare('DELETE FROM mail_outbox WHERE id = ?').bind(id).run();
       await env.DB.prepare('DELETE FROM queries WHERE id = ?').bind(id).run();
       return respond({ ok: true });
     }
@@ -105,6 +109,8 @@ export default {
     catch { return Response.json({ error: 'Dotaz sa nepodarilo potvrdiť. Skúste znova.' }, { status: 503, headers: { 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': new URL(request.url).pathname === '/api/queries' && request.method === 'POST' && request.headers.get('Origin') === env.ALLOWED_ORIGIN ? env.ALLOWED_ORIGIN : '', 'Vary': 'Origin' } }); }
   },
   async scheduled(controller, env) {
+    await env.DB.prepare('DELETE FROM mail_outbox WHERE id IN (SELECT id FROM queries WHERE expires_at <= ?)').bind(new Date().toISOString()).run();
     await env.DB.prepare('DELETE FROM queries WHERE expires_at <= ?').bind(new Date().toISOString()).run();
+    await retryMail(env, decrypt);
   }
 };
