@@ -1,0 +1,49 @@
+name: Odboráčik – kontrola a web
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: odboracik-web-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --test tests/*.test.mjs
+      - run: node --check odborovy-asistent-web/app.js
+      - run: node scripts/configure.mjs web
+        env:
+          QUERY_ENDPOINT: ${{ vars.QUERY_ENDPOINT }}
+          PRIVACY_URL: ${{ vars.PRIVACY_URL }}
+          TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
+      - run: node scripts/stage-main-site.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: odboracik-web
+          path: site-output
+          include-hidden-files: true
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request' && vars.PAGES_ACTIONS_ENABLED == 'true'
+        with:
+          path: site-output
+  deploy:
+    if: github.event_name != 'pull_request' && vars.PAGES_ACTIONS_ENABLED == 'true'
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

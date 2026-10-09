@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="sk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Odboráčik – základné odpovede a bezpečný kontakt pre zamestnancov Packeta Slovakia.">
+  <title>Odboráčik | ZO Packeta Slovakia</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="page-shell">
+    <header class="app-header">
+      <a class="brand" href="#top" aria-label="ZO Packeta Slovakia – úvod"><img src="assets/logo-zo-packeta.png" alt="ZO Packeta Slovakia"></a>
+      <div class="header-actions"><button class="records-button" id="open-records" type="button" hidden>Evidencia <span id="record-count">0</span></button><span class="privacy-label"><i></i> dôverný kontakt</span></div>
+    </header>
+
+    <section class="app" id="top" aria-label="Odboráčik">
+      <aside class="intro-panel">
+        <p class="eyebrow">ZO PACKETA SLOVAKIA</p>
+        <h1>Odboráčik</h1>
+        <p class="tagline">Pomocník pre základné pracovné otázky.</p>
+        <p class="side-copy">Rozumie bežným témam o práci a ukáže vám, kedy je lepšie napísať priamo odborom.</p>
+        <div class="side-rule"></div>
+        <p class="side-note">Spoločne za férové pracovné podmienky.</p>
+      </aside>
+
+      <section class="chat-card" >
+        <div class="chat-head">
+          <div class="avatar" aria-hidden="true">O</div>
+          <div><strong>Odboráčik</strong><small><span></span> online · základné odpovede</small></div>
+        </div>
+        <div class="messages" id="messages" role="log" aria-live="polite" aria-relevant="additions">
+          <div class="message assistant">Ahoj, som Odboráčik. Pomôžem s bežnými otázkami o práci. Vyber tému alebo napíš krátku otázku. Text chatu sa neposiela na server. Citlivé údaje sem nepíš.</div>
+        </div>
+        <div class="quick-topics" aria-label="Časté témy">
+          <button class="topic" data-question="Mám problém so mzdou alebo pracovným časom.">Mzda a pracovný čas</button>
+          <button class="topic" data-question="Končí mi pracovný pomer.">Skončenie pomeru</button>
+          <button class="topic" data-question="Na pracovisku hrozí nebezpečenstvo.">Bezpečnosť pri práci</button>
+          <button class="topic" data-question="Čo robia odbory?">Čo robia odbory?</button>
+        </div>
+        <form class="chat-form" id="chat-form">
+          <label class="sr-only" for="chat-input">Vaša otázka</label>
+          <input id="chat-input" maxlength="240" placeholder="Napíšte otázku…" autocomplete="off">
+          <button type="submit" aria-label="Odoslať otázku">↑</button>
+        </form>
+        <button class="contact-cta" id="open-contact" type="button">Zložitejšia alebo osobná vec? Napíšte odborom <span>→</span></button>
+      </section>
+    </section>
+
+    <p class="disclaimer" id="mode-note"></p><p class="disclaimer">Odboráčik dáva všeobecné informácie, nie právne zastupovanie. Pri bezprostrednom ohrození zdravia alebo života volajte 112.</p>
+  </main>
+
+  <dialog class="contact-dialog" id="contact-dialog" aria-labelledby="contact-title">
+    <div class="dialog-head"><div><p class="eyebrow">DÔVERNÝ KONTAKT</p><h2 id="contact-title">Napíšte odborom</h2></div><button class="close-dialog" id="close-contact" type="button" aria-label="Zavrieť formulár">×</button></div>
+    <p class="dialog-intro">Odoslaním sa dotaz uloží do evidencie odborov; e-mailové upozornenie sa neposiela. Opíšte vec stručne. Neposielajte heslá, rodné číslo ani zdravotnú dokumentáciu.</p>
+    <form class="contact-form" id="contact-form" novalidate>
+      <div class="form-grid"><label>Meno alebo prezývka<input name="name" maxlength="80" autocomplete="name"></label><label>E-mail <b>*</b><input type="email" name="email" maxlength="120" required autocomplete="email"></label></div>
+      <label>Téma <b>*</b><select name="topic" required><option value="">Vyberte tému</option><option>Mzda alebo pracovný čas</option><option>Pracovné podmienky / BOZP</option><option>Komunikácia alebo konflikt</option><option>Skončenie pracovného pomeru</option><option>Členstvo alebo spolupráca</option><option>Iné</option></select></label>
+      <label>Čo sa stalo? <b>*</b><textarea name="message" rows="5" maxlength="3000" required placeholder="Čo sa stalo, kedy a čo potrebujete vyriešiť?"></textarea></label>
+      <label class="checkbox"><input type="checkbox" name="urgent"> Vec je časovo citlivá alebo sa týka bezpečnosti.</label>
+      <label class="checkbox"><input type="checkbox" name="consent" required> Žiadam o vybavenie dotazu a oboznámil/a som sa s informáciami o spracúvaní údajov. <b>*</b></label>
+      <input class="hp" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <p><a id="privacy-link" hidden target="_blank" rel="noopener noreferrer">Informácie o spracúvaní údajov</a></p><div id="spam-check"></div>
+      <button class="send-button" type="submit">Odoslať dotaz</button><p class="form-status" id="form-status" role="status"></p>
+    </form>
+  </dialog>
+  <dialog class="records-dialog" id="records-dialog" aria-labelledby="records-title">
+    <div class="dialog-head"><div><p class="eyebrow">INTERNÝ TEST</p><h2 id="records-title">Evidencia dotazov</h2></div><button class="close-dialog" id="close-records" type="button" aria-label="Zavrieť evidenciu">×</button></div>
+    <p class="dialog-intro">Dotazy sú v tejto testovacej verzii uložené iba v tomto prehliadači.</p>
+    <div class="records-actions"><button class="export-button" id="export-records" type="button">Exportovať CSV</button><button class="clear-button" id="clear-records" type="button">Vymazať testovacie údaje</button></div>
+    <div class="records-empty" id="records-empty">Zatiaľ tu nie sú žiadne dotazy.</div>
+    <div class="records-wrap"><table><thead><tr><th>Dátum</th><th>Kanál</th><th>Téma</th><th>Dotaz</th><th>Stav</th></tr></thead><tbody id="records-list"></tbody></table></div>
+  </dialog>
+  <script src="config.js"></script><script src="knowledge-base.js"></script><script src="app.js"></script>
+</body>
+</html>
