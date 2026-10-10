@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Odboráčik – základné odpovede a bezpečný kontakt pre zamestnancov Packeta Slovakia.">
   <title>Odboráčik | ZO Packeta Slovakia</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=legal-20261010">
 </head>
 <body>
   <main class="page-shell">
@@ -19,7 +19,7 @@
         <p class="eyebrow">ZO PACKETA SLOVAKIA</p>
         <h1>Odboráčik</h1>
         <p class="tagline">Pomocník pre základné pracovné otázky.</p>
-        <p class="side-copy">Rozumie bežným témam o práci a ukáže vám, kedy je lepšie napísať priamo odborom.</p>
+        <p class="side-copy">Vysvetlí výpoveď, dovolenku aj ďalšie pracovné témy. Pri odpovediach nájdete paragrafy, zdroje a potrebné spresnenie.</p>
         <div class="side-rule"></div>
         <p class="side-note">Spoločne za férové pracovné podmienky.</p>
       </aside>
@@ -33,14 +33,14 @@
           <div class="message assistant">Ahoj, som Odboráčik. Pomôžem s bežnými otázkami o práci. Vyber tému alebo napíš krátku otázku. Text chatu sa neposiela na server. Citlivé údaje sem nepíš.</div>
         </div>
         <div class="quick-topics" aria-label="Časté témy">
-          <button class="topic" data-question="Mám problém so mzdou alebo pracovným časom.">Mzda a pracovný čas</button>
-          <button class="topic" data-question="Končí mi pracovný pomer.">Skončenie pomeru</button>
+          <button class="topic" data-question="Aký nárok mám na dovolenku?">Dovolenka</button>
+          <button class="topic" data-question="Ako dať výpoveď?">Ako dať výpoveď?</button>
           <button class="topic" data-question="Na pracovisku hrozí nebezpečenstvo.">Bezpečnosť pri práci</button>
           <button class="topic" data-question="Čo robia odbory?">Čo robia odbory?</button>
         </div>
         <form class="chat-form" id="chat-form">
           <label class="sr-only" for="chat-input">Vaša otázka</label>
-          <input id="chat-input" maxlength="240" placeholder="Napíšte otázku…" autocomplete="off">
+          <input id="chat-input" maxlength="1200" placeholder="Napíšte otázku…" autocomplete="off">
           <button type="submit" aria-label="Odoslať otázku">↑</button>
         </form>
         <button class="contact-cta" id="open-contact" type="button">Zložitejšia alebo osobná vec? Napíšte odborom <span>→</span></button>
@@ -71,6 +71,6 @@
     <div class="records-empty" id="records-empty">Zatiaľ tu nie sú žiadne dotazy.</div>
     <div class="records-wrap"><table><thead><tr><th>Dátum</th><th>Kanál</th><th>Téma</th><th>Dotaz</th><th>Stav</th></tr></thead><tbody id="records-list"></tbody></table></div>
   </dialog>
-  <script src="config.js"></script><script src="knowledge-base.js"></script><script src="app.js"></script>
+  <script src="config.js"></script><script src="knowledge-base.js?v=legal-20261010"></script><script src="legal-engine.js?v=legal-20261010"></script><script src="app.js?v=legal-20261010"></script>
 </body>
 </html>
