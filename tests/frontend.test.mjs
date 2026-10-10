@@ -38,3 +38,13 @@ test('browser renders user markup as text and never as active HTML',()=>{
  assert.equal(ui.nodes.get('#messages').children[0].textContent,'<img src=x onerror=alert(1)> Čo sú odbory?');
  assert.equal(ui.nodes.get('#messages').children[0].innerHTML,undefined);
 });
+test('follow-up button advances typo question to real membership instructions without sending data',()=>{
+ const ui=setup(cfg);ui.chat('co su to odobory');
+ const find=(node,text)=>node.textContent===text?node:node.children.map(n=>find(n,text)).find(Boolean);
+ const button=find(ui.nodes.get('#messages').children.at(-1),'Ako sa prihlásiť?');
+ assert.ok(button);button.listeners.click();
+ const answer=ui.nodes.get('#messages').children.at(-1);
+ assert.ok(answer.children.some(n=>n.href==='https://www.odborypacketa.eu/#prihlaska'));
+ assert.ok(answer.children.some(n=>/vyplnenou a podpísanou/.test(n.textContent)));
+ assert.equal(ui.calls.length,0);assert.equal(ui.storage.size,0);
+});

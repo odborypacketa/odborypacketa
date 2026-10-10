@@ -42,6 +42,9 @@ function addLegalMessage(result) {
   for (const card of result.cards) {
     if (result.cards.length > 1) { const title = document.createElement('strong'); title.textContent = card.title; el.append(title); }
     paragraph(card.answer);
+    for(const link of card.links||[]) {
+      const a=document.createElement('a');a.textContent=link.label;a.href=link.url;a.target='_blank';a.rel='noopener noreferrer';a.className='answer-link';el.append(a);
+    }
     // Material conditions remain available with the answer; long explanations can be expanded.
     const details = document.createElement('details');
     details.open = card.risk === 'urgent_legal' || card.risk === 'emergency';
@@ -54,13 +57,22 @@ function addLegalMessage(result) {
       const a = document.createElement('a'); a.textContent = ref.name + ' – ' + ref.provision;
       a.href = ref.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; sources.append(a);
     }
-    const date = document.createElement('small'); date.textContent = 'Overené 10. 10. 2026 · všeobecné informácie'; sources.append(date); el.append(sources);
+    const date = document.createElement('small'); date.textContent = card.kind==='organisation'?'Informácie organizácie · overené 10. 10. 2026':'Overené 10. 10. 2026 · všeobecné informácie'; sources.append(date); el.append(sources);
   }
   if (result.questions?.length) paragraph('Na spresnenie: ' + result.questions.join(' '));
   if (result.frame) {
     const details = document.createElement('details'); const summary = document.createElement('summary');
     summary.textContent = 'Postup pri individuálnom prípade'; details.append(summary);
     const frame = document.createElement('p'); frame.textContent = result.frame; details.append(frame); el.append(details);
+  }
+  if(result.suggestions?.length) {
+    const choices=document.createElement('div');choices.className='follow-up-choices';
+    const label=document.createElement('small');label.textContent='Môžete sa ďalej opýtať:';choices.append(label);
+    for(const question of result.suggestions) {
+      const button=document.createElement('button');button.type='button';button.textContent=question;
+      button.addEventListener('click',()=>reply(question));choices.append(button);
+    }
+    el.append(choices);
   }
   messages.append(el); messages.scrollTop = messages.scrollHeight;
 }

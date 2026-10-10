@@ -1,8 +1,31 @@
 (function (root) {
   'use strict';
-  const normalize = value => String(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  // Correct only recognised domain words; never rewrite numbers or negation.
+  function oneEdit(a,b) {
+    if (Math.abs(a.length-b.length)>1) return false;
+    if(a.length===b.length) {
+      const diff=[...a].map((c,i)=>c===b[i]?-1:i).filter(i=>i>=0);
+      return diff.length===1 || (diff.length===2 && diff[1]===diff[0]+1 && a[diff[0]]===b[diff[1]] && a[diff[1]]===b[diff[0]]);
+    }
+    const longer=a.length>b.length?a:b, shorter=a.length>b.length?b:a;
+    let i=0;while(i<shorter.length && longer[i]===shorter[i]) i++;
+    return longer.slice(i+1)===shorter.slice(i);
+  }
+  const vocabulary=['odbory','odborov','odboroch','prihlasit','prihlaska','dovolenka','dovolenku','vypoved','odstupne','nadcas','zamestnavatel'];
+  const normalize = value => String(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[a-z]+/g,word=>{
+    if(word.length<6 || vocabulary.includes(word)) return word;
+    const matches=vocabulary.filter(v=>oneEdit(word,v));
+    return matches.length===1?matches[0]:word;
+  }).replace(/\s+/g,' ').trim();
   const rules = {
-    odbory: /co (su|robia).*odbor|naco.*odbor|uloha.*odbor|kto su odbor/,
+    odbory: /co\b.*\b(su|robia|znamenaju).*odbor|naco.*odbor|uloha.*odbor|kto su odbor/,
+    clenstvo_prihlaska: /prihlas|vstup.*odbor|stat.*clen|chcem.*(pridat|zapojit)|ako.*(pridat|zapojit)/,
+    clenstvo_cena: /clensk.*(prispev|poplat)|kolko.*(clenstvo|clen|prispev)|odbor.*(stoji|platit)/,
+    clenstvo_dorucenie: /(?:kam|komu|kde).*(poslat|odoslat|odovzdat).*prihl|prihl.*(?:kam|komu|kde).*(poslat|odovzdat)/,
+    clenstvo_rozhodnutie: /kedy.*clen|prijat.*clen|schval.*prihl|kedy.*(?:potvrd|rozhodn).*prihl/,
+    clenstvo_sukromie: /(?:dozvie|uvidi|zisti|vie).*clen|clenstvo.*(?:sef|zamestnavat|sukrom|tajne)|kto.*(?:vie|vidi).*odbor/,
+    clenstvo_vyhody: /vyhod.*clen|clen.*vyhod|co.*(?:prinesie|ziskam).*clen|preco.*(?:pridat|vstupit|clen)/,
+    kontakt_odborov: /kontakt.*odbor|napisat.*odbor|telefon.*odbor|cislo.*odbor|kde.*(?:sidli|najdem).*odbor/,
     kolektivna_zmluva: /co je kolektiv|kolektiv.*neclen|kolektiv.*neorganiz|plati kolektiv|packeta.*(dovolen|benefit)|vyhod.*kolektiv/,
     vyjednavanie: /navrh.*kolektiv|vyjednavan|rokovan.*kolektiv/,
     vlastna_vypoved: /ako.*(dat|dam|podat).*vypoved|chcem (odist|skoncit)|davam.*vypoved|vypoved.*(ja|sam)|vlastn.*vypoved|prestat chodit do prace/,
@@ -50,10 +73,10 @@
   const ranks = {normal: 0, case_review: 1, urgent_legal: 2, emergency: 3};
   function create(base, clock = () => new Date()) {
     let active = [], lastQuestion = '';
-    const byId = new Map(base.topics.map(card => [card.id, card]));
+    const byId = new Map([...base.topics,...(base.conversationTopics||[])].map(card => [card.id, card]));
     function identify(question) {
       const q = normalize(question), found = new Set();
-      for (const card of base.topics) {
+      for (const card of byId.values()) {
         if (card.examples.some(ex => normalize(ex).replace(/[?.!]/g, '') === q.replace(/[?.!]/g, '')) || rules[card.id]?.test(q)) found.add(card.id);
       }
       if (/vypoved/.test(q) && ![...found].some(id => /vypoved|skoncenie|dohoda/.test(id))) found.add('vlastna_vypoved');
@@ -68,21 +91,54 @@
       if (found.has('dovolenka_prenos') && /preplat/.test(q)) found.delete('dovolenka_prenos');
       if (found.has('dovolenka_preplatenie') && /prepad|prenes|stara/.test(q)) found.delete('dovolenka_preplatenie');
       if (/davam.*vypoved|vypoved.*ja|vlastn.*vypoved/.test(q)) found.add('vlastna_vypoved');
+      // Joining a portal or arranging leave is not applying for union membership.
+      if(/prihlas.*(?:portal|ucet|system|aplikac|dovolen)/.test(q)) found.delete('clenstvo_prihlaska');
+      if([...found].some(id=>id.startsWith('clenstvo_') && id!=='clenstvo_prihlaska')) found.delete('clenstvo_prihlaska');
       return [...found];
+    }
+    function contextual(q) {
+      const union=active.some(id=>id==='odbory'||id.startsWith('clenstvo_')||id==='kontakt_odborov');
+      if(union) {
+        if(/kolko.*(?:stoji|plat|poplat)|je to.*(?:zadarmo|bezplat)/.test(q)) return ['clenstvo_cena'];
+        if(/(?:kam|komu|kde).*(?:poslat|odoslat|odovzdat)|(?:mozem|staci).*(?:mail|post|osobne)/.test(q)) return ['clenstvo_dorucenie'];
+        if(/(?:kedy|ako dlho|dokedy).*(?:odpoved|potvrd|prij|schval|vybav)|uz som.*(?:poslal|odoslal)/.test(q)) return ['clenstvo_rozhodnutie'];
+        if(/(?:dozvie|zisti|uvidi|vie).*(?:sef|zamestnavat)|(?:sef|zamestnavat).*(?:dozvie|zisti|uvidi|vie)|je to.*tajne/.test(q)) return ['clenstvo_sukromie'];
+        if(/co.*(?:ziskam|prinesie)|preco.*(?:pridat|vstupit)|ake.*vyhody/.test(q)) return ['clenstvo_vyhody'];
+      }
+      if(active.some(id=>id.startsWith('dovolenka'))) {
+        if(/(?:kto|ako).*(?:schval|urcuje)|mozem.*zajtra/.test(q)) return ['dovolenka_termin'];
+        if(/preplat/.test(q)) return ['dovolenka_preplatenie'];
+        if(/(?:preniest|prenes|prepad)|a co.*(?:stara|minul)/.test(q)) return ['dovolenka_prenos'];
+        if(/(?:12.hodin|kratsi uvaz|polovic|zmeny)/.test(q)) return ['dovolenka_zmeny'];
+      }
+      if(active.some(id=>/vypoved|dorucenie/.test(id)) && /(?:staci|mozem|poslat).*(?:e.mail|email|mail|post)|nechc.*prevziat/.test(q)) return ['dorucenie'];
+      return [];
+    }
+    function suggestions(ids) {
+      if(ids.some(id=>id==='odbory'||id.startsWith('clenstvo_')||id==='kontakt_odborov')) {
+        const options=[['clenstvo_prihlaska','Ako sa prihlásiť?'],['clenstvo_cena','Koľko stojí členstvo?'],['clenstvo_dorucenie','Kam poslať prihlášku?'],['clenstvo_rozhodnutie','Kedy vznikne členstvo?'],['clenstvo_sukromie','Dozvie sa zamestnávateľ o členstve?']];
+        return options.filter(([id])=>!ids.includes(id)).slice(0,3).map(([,label])=>label);
+      }
+      if(ids.some(id=>id.startsWith('dovolenka'))) return ['Kto určuje termín dovolenky?','Môžu mi dovolenku preplatiť?','Čo s dovolenkou z minulého roka?'];
+      if(ids.includes('vlastna_vypoved')) return ['Ako dlho trvá výpovedná doba?','Stačí výpoveď e-mailom?','Mám nárok na odstupné?'];
+      return ['Vysvetli to podrobnejšie','Aké sú výnimky?'];
     }
     function respond(question) {
       const q = normalize(question); let ids = identify(question);
+      const contextualIds=contextual(q);
+      if(contextualIds.length) ids=contextualIds;
+      const detailFollowUp=active.length && /^(?:a )?(?:vysvetli to (?:podrobnejsie|jednoduchsie)|ake su (?:vynimky|podmienky)|co (?:mam urobit|dalej)|aky je dalsi krok|ako dlho trva vypovedna doba|aka je (?:lehota|vypovedna doba))[?.!]*$/.test(q);
       // Short factual replies belong to the pending topic even if a date/age has a generic match.
       const factualReply = active.length && !/vypoved|dovolen|mzda|lekar|pn|stravn|nadcas|odbor/.test(q) && /^(od\b|mam \d|\d|ano\b|nie\b|dorucim\b|pracujem od\b)/.test(q);
       const isFollowUp = (factualReply || !ids.length) && active.length && /\b(od|rok|mesiac|mam|ano|nie|dorucim|202\d|19\d\d|200\d|20\d\d)\b|\d/.test(q);
-      const selected = isFollowUp ? active : ids;
+      const selected = isFollowUp || detailFollowUp ? active : ids;
       if (!selected.length) {
         return {cards: [], topicIds: [], risk: 'normal', contact: false, text: /^(ahoj|dobry den|cau|dakujem)[!. ]*$/.test(q)
-          ? 'Ahoj! Viem vysvetliť odbory, výpoveď, dovolenku, mzdu, pracovný čas, príplatky, PN aj návštevu lekára. Na čo sa chcete opýtať?'
-          : 'Túto otázku zatiaľ neviem spoľahlivo zaradiť. Skúste uviesť, či ide o výpoveď, dovolenku, mzdu, pracovný čas, lekára alebo inú pracovnú tému. Pri osobnom spore môžete kontaktovať odbory.'};
+          ? (/dakujem/.test(q)?'Rado sa stalo. Môžeme pokračovať ďalšou otázkou.':'Ahoj! Pomôžem s odbormi, prihláškou a pracovnými otázkami. Čo vás zaujíma?')
+          : active.length ? 'Túto nadväzujúcu otázku si potrebujem spresniť. Pýtate sa na '+active.map(id=>byId.get(id)?.title).join(' alebo ')+', alebo chcete otvoriť inú tému?' : 'Čo konkrétne potrebujete zistiť? Môžete sa opýtať napríklad na prihlášku do odborov, výpoveď, dovolenku alebo mzdu.',suggestions:active.length?suggestions(active):['Čo sú odbory?','Ako sa prihlásiť?','Aký nárok mám na dovolenku?']};
       }
       active = selected;
-      if (!isFollowUp) lastQuestion = question;
+      if (!isFollowUp && !detailFollowUp) lastQuestion = question;
       const now = clock().toISOString().slice(0,10);
       const stale = now < '2026-09-01' || now > '2026-12-31';
       const historical = /(?:rok(?:u)?|za rok|v roku)\s*(20\d\d)/.exec(q);
@@ -122,12 +178,19 @@
       }
       const cards = responseCards.map(card => {
         const refs = card.legalReferences.map(ref => ({...ref,...base.sources[ref.sourceId]}));
-        const answer = card.id === 'minimalna_mzda' && (stale || outsideYear)
+        let answer = card.id === 'minimalna_mzda' && (stale || outsideYear)
           ? 'Presnú minimálnu mzdu pre požadované obdobie táto báza nepotvrdzuje. Suma 915 € mesačne a 5,259 € hodinovo bola overená iba pre rok 2026; aktuálnu sumu treba dohľadať v oznámení MPSVR.' : card.answer;
+        if(detailFollowUp) answer=/vynimky/.test(q)?card.exceptions.join('\n'): /jednoduchsie/.test(q)?card.answer:card.detail;
         return {...card,answer,refs};
       });
       const continuation = isFollowUp ? 'Nadväzujem na vašu predošlú otázku. Údaj beriem ako doplnenie; ak niektorá podmienka zostáva nejasná, nižšie uvádzam, čo treba overiť.' : '';
-      const questions = [...new Set(cards.flatMap(c => c.clarifyingQuestions))];
+      const questions = detailFollowUp?[]:[...new Set(cards.flatMap(c => c.clarifyingQuestions))].filter(prompt=>{
+        const n=normalize(prompt);
+        if(/odkedy.*doruc/.test(n) && /od\s*\d{1,2}\.\d{1,2}\.\d{4}/.test(joined) && /doruc.*\d{1,2}\.\d{1,2}\.\d{4}/.test(joined)) return false;
+        if(/kolko rokov/.test(n) && /mam\s*\d{1,2}\s*rok/.test(joined) && /20\d\d/.test(joined)) return false;
+        if(/trvale.*diet/.test(n) && /mam\s*(\d{1,2})\s*rok/.test(joined) && Number(/mam\s*(\d{1,2})\s*rok/.exec(joined)[1])>=33) return false;
+        return true;
+      });
       const frame = risk !== 'normal' ? [
         '1. Čo vieme: zatiaľ len váš opis, nie overené doklady.',
         '2. Čo nevieme: ' + (questions.join(' ') || 'Presné dátumy a okolnosti prípadu.'),
@@ -138,7 +201,7 @@
         '7. Vyjednávacia pozícia: bez podkladov nevieme posúdiť dôkazy ani výsledok rokovania.',
         '8. Ďalší krok: ' + (risk === 'emergency' ? 'bezpečie a privolanie pomoci ihneď.' : risk === 'urgent_legal' ? 'kontaktujte advokáta bezodkladne; súčasne môžete osloviť odbory.' : 'po overení údajov požiadajte príslušné odbory o posúdenie.')
       ].join('\n') : '';
-      return {cards,topicIds:selected,risk,contact:risk !== 'normal',warnings,calculations,questions,continuation,frame,
+      return {cards,topicIds:selected,risk,contact:risk !== 'normal',warnings,calculations,questions,continuation,frame,suggestions:suggestions(selected),
         text:[...warnings,continuation,...calculations,...cards.map(c=>[c.answer,c.detail,...c.exceptions].join('\n')), ...questions].filter(Boolean).join('\n\n')};
     }
     return {respond,identify,reset(){active=[];lastQuestion='';}};
