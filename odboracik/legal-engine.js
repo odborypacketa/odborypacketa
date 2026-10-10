@@ -18,7 +18,7 @@
     return matches.length===1?matches[0]:word;
   }).replace(/\s+/g,' ').trim();
   const rules = {
-    odbory: /co\b.*\b(su|robia|znamenaju).*odbor|naco.*odbor|uloha.*odbor|kto su odbor/,
+    odbory: /co\b.*\b(su|robia|znamenaju).*odbor|naco.*odbor|uloha.*odbor|kto su odbor|odbor.*(?:zastup|pomoc|pomoct|pomoz|pomah|ries|pravomoc)|(?:zastup|pomoc|pomoct|pomoz|pomah|ries|pravomoc).*odbor/,
     clenstvo_prihlaska: /prihlas|vstup.*odbor|stat.*clen|chcem.*(pridat|zapojit)|ako.*(pridat|zapojit)/,
     clenstvo_cena: /clensk.*(prispev|poplat)|kolko.*(clenstvo|clen|prispev)|odbor.*(stoji|platit)/,
     clenstvo_dorucenie: /(?:kam|komu|kde).*(poslat|odoslat|odovzdat).*prihl|prihl.*(?:kam|komu|kde).*(poslat|odovzdat)/,

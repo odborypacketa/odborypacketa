@@ -83,3 +83,7 @@ test('suggested questions route to actual different answers',()=>{
 test('controlled spelling correction preserves numbers and negation',()=>{
  assert.equal(ctx.window.ODBORACIK_LEGAL_ENGINE.normalize('Nie 33 ale 32 rokov'), 'nie 33 ale 32 rokov');
 });
+
+test('union representation and support questions recognise their topic',()=>{
+ for(const q of ['v čom ma odbory zastúpia?','S čím mi odbory pomôžu?','aké právomoci majú odbory?'])assert.ok(create().respond(q).topicIds.includes('odbory'),q);
+});

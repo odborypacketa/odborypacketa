@@ -112,3 +112,12 @@ test('complete union skill is available with mode-specific references',()=>{
  const selected=selectContext([{role:'user',content:question}]);assert.ok(selected.some(c=>c.id==='skill_'+id));assert.ok(selected.some(c=>c.id==='skill_legal'));assert.ok(selected.some(c=>c.id==='skill_privacy'));
  }
 });
+
+test('representation has trusted union facts even with a previously unknown wording',()=>{
+ const selected=selectContext([{role:'user',content:'v čom ma odbory zastúpia?'}]);assert.ok(selected.some(c=>c.id==='odbory'));
+});
+test('incomplete and unsafe model answers have distinct non-private failure categories',async()=>{
+ for(const [provider,code] of [[{status:'incomplete',incomplete_details:{reason:'max_output_tokens'},output:[]},'answer_length'],[{status:'completed',output:[{type:'message',content:[{type:'output_text',text:'bad json'}]}]},'answer_format'],[{status:'completed',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify({answer:'Visit https://evil.invalid',topicIds:['odbory'],suggestions:[]})}]}]},'answer_links']]){
+ const remote=async url=>url.includes('siteverify')?Response.json({success:true,hostname:'www.odborypacketa.eu',action:'chat'}):Response.json(provider);const result=await handle(request(),env,remote);assert.equal(result.status,503);assert.equal((await result.json()).code,code);
+ }
+});
