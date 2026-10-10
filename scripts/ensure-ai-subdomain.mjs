@@ -8,6 +8,7 @@ async function call(method,body){const response=await fetch(endpoint,{method,hea
 let result=await call('GET');
 if(!result.data.success||!result.data.result?.subdomain){
  if(result.status===401||result.status===403)throw Error('Cloudflare token nemá prístup k Workers subdoméne.');
+ if(![200,404].includes(result.status))throw Error('Overenie Workers subdomény je dočasne nedostupné; existujúcu konfiguráciu nemeníme.');
  const subdomain=process.env.AI_WORKERS_SUBDOMAIN||'odborypacketa';
  if(!/^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/.test(subdomain))throw Error('Neplatná Workers subdoména.');
  result=await call('PUT',{subdomain});

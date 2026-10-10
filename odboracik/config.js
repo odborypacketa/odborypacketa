@@ -4,7 +4,7 @@ window.ODBOROVY_ASISTENT_CONFIG = {
   "privacyUrl": "",
   "turnstileSiteKey": "",
   "internalStorageEnabled": false,
-  "chatEndpoint": "",
-  "aiTurnstileSiteKey": "",
-  "aiPrivacyReady": false
+  "chatEndpoint": "https://odboracik-ai.odborypacketa.workers.dev/api/chat",
+  "aiTurnstileSiteKey": "0x4AAAAAAFS7tNqpkQJqax0W",
+  "aiPrivacyReady": true
 };

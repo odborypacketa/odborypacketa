@@ -2,7 +2,7 @@ name: Odboráčik – AI model
 on:
   push:
     branches: [main]
-    paths: ['ai/**', 'odborovy-asistent-web/knowledge-base.js', 'odborovy-asistent-web/legal-engine.js', 'scripts/build-ai.mjs', 'scripts/configure-ai.mjs', 'tests/**', '.github/workflows/deploy-ai.yml']
+    paths: ['ai/**', 'odborovy-asistent-web/knowledge-base.js', 'odborovy-asistent-web/legal-engine.js', 'scripts/build-ai.mjs', 'scripts/configure-ai.mjs', 'scripts/ensure-ai-subdomain.mjs', 'tests/**', '.github/workflows/deploy-ai.yml']
   workflow_dispatch:
 permissions:
   contents: read
