@@ -60,7 +60,7 @@ test('daily global and client limits are shared, reset and store counters only',
  const limits=new ChatLimits({storage:{transaction:fn=>fn(txn),setAlarm:async()=>{}}});
  const call=(client,day='2026-10-10',limit=12)=>limits.fetch(new Request('https://limits/check',{method:'POST',body:JSON.stringify({client,day,limit})}));
  for(let i=0;i<10;i++)assert.equal((await call('client-a')).status,204);
- assert.equal((await call('client-a')).status,429);assert.equal((await call('client-b')).status,204);assert.equal((await call('client-c')).status,204);assert.equal((await call('client-d')).status,429);
+ const ipLimit=await call('client-a');assert.equal(ipLimit.status,429);assert.equal((await ipLimit.json()).code,'daily_ip_limit');assert.equal((await call('client-b')).status,204);assert.equal((await call('client-c')).status,204);const globalLimit=await call('client-d');assert.equal(globalLimit.status,429);assert.equal((await globalLimit.json()).code,'daily_limit');
  assert.equal((await call('client-a','2026-10-11')).status,204);assert.equal(value.total,1);assert.deepEqual(Object.keys(value),['day','total','clients']);
 });
 test('idle counters expire by alarm, but delayed alarm preserves the current day',async()=>{
