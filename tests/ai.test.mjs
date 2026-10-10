@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {handle,formatAnswer,validateChat,ChatLimits} from '../ai/worker.mjs';
+import {handle,formatAnswer,validateChat,ChatLimits,selectContext} from '../ai/worker.mjs';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 const origin='https://www.odborypacketa.eu';
@@ -99,5 +99,16 @@ test('provider failure exposes only an approved category, never raw private deta
  for(const code of ['insufficient_quota','private-detail']){
  const remote=async url=>url.includes('siteverify')?Response.json({success:true,hostname:'www.odborypacketa.eu',action:'chat'}):Response.json({error:{code,message:'private account data',api_key:'secret'}},{status:429});
  const result=await (await handle(request(),env,remote)).json();assert.equal(result.code,code==='insufficient_quota'?code:'provider_429');assert.ok(!JSON.stringify(result).includes('private'));assert.ok(!JSON.stringify(result).includes('secret'));
+ }
+});
+
+test('knowledge selection retains follow-up topics and reduces irrelevant input',()=>{
+ const selected=selectContext(payload.messages);assert.ok(selected.some(c=>c.id==='odbory'));assert.ok(selected.some(c=>c.id==='clenstvo_prihlaska'));assert.ok(JSON.stringify(selected).length<20000);
+ const legal=selectContext([{role:'user',content:'Aký nárok mám na dovolenku?'}]);assert.ok(legal.some(c=>c.id==='dovolenka_vymera'));
+});
+
+test('complete union skill is available with mode-specific references',()=>{
+ for(const [question,id] of [['Priprav vyjednávaciu stratégiu kolektívnej zmluvy','negotiator'],['Napíš list vedeniu','comms'],['Kontrola plnenia záväzkov','watchdog'],['Prijatie člena a zápisnica','ops'],['Podnet a dôkazy prípadu','case']]){
+ const selected=selectContext([{role:'user',content:question}]);assert.ok(selected.some(c=>c.id==='skill_'+id));assert.ok(selected.some(c=>c.id==='skill_legal'));assert.ok(selected.some(c=>c.id==='skill_privacy'));
  }
 });
