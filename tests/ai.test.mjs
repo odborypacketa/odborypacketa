@@ -57,11 +57,21 @@ test('unfinished or malformed model output never rendered as valid AI answer',as
 });
 test('daily global and client limits are shared, reset and store counters only',async()=>{
  let value;const txn={get:async()=>structuredClone(value),put:async(k,v)=>{value=structuredClone(v);}};
- const limits=new ChatLimits({storage:{transaction:fn=>fn(txn)}});
+ const limits=new ChatLimits({storage:{transaction:fn=>fn(txn),setAlarm:async()=>{}}});
  const call=(client,day='2026-10-10',limit=12)=>limits.fetch(new Request('https://limits/check',{method:'POST',body:JSON.stringify({client,day,limit})}));
  for(let i=0;i<10;i++)assert.equal((await call('client-a')).status,204);
  assert.equal((await call('client-a')).status,429);assert.equal((await call('client-b')).status,204);assert.equal((await call('client-c')).status,204);assert.equal((await call('client-d')).status,429);
  assert.equal((await call('client-a','2026-10-11')).status,204);assert.equal(value.total,1);assert.deepEqual(Object.keys(value),['day','total','clients']);
+});
+test('idle counters expire by alarm, but delayed alarm preserves the current day',async()=>{
+ let value={day:'2020-01-01',total:1,clients:{old:1}},scheduled;
+ const txn={get:async()=>structuredClone(value),put:async(k,v)=>{value=structuredClone(v);},delete:async()=>{value=undefined;}};
+ const limits=new ChatLimits({storage:{transaction:fn=>fn(txn),setAlarm:async t=>{scheduled=t;}}});
+ await limits.alarm();assert.equal(value,undefined);
+ const day=new Date().toISOString().slice(0,10);
+ await limits.fetch(new Request('https://limits/check',{method:'POST',body:JSON.stringify({day,client:'new',limit:30})}));
+ assert.equal(scheduled,Date.parse(day+'T00:00:00Z')+86400000);
+ await limits.alarm();assert.equal(value.total,1);
 });
 const ctx=vm.createContext({window:{},URL,AbortSignal,fetch});
 for(const name of ['knowledge-base.js','ai-client.js'])vm.runInContext(readFileSync(new URL('../odborovy-asistent-web/'+name,import.meta.url),'utf8'),ctx);

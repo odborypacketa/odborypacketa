@@ -73,6 +73,7 @@ export class ChatLimits {
   let counts=await txn.get('counts');if(!counts||counts.day!==day)counts={day,total:0,clients:{}};
   if(counts.total>=limit || (counts.clients[client]||0)>=10)return false;
   counts.total++;counts.clients[client]=(counts.clients[client]||0)+1;await txn.put('counts',counts);return true;
- });return new Response(null,{status:allowed?204:429});}
+ });await this.state.storage.setAlarm(Date.parse(day+'T00:00:00Z')+86400000);return new Response(null,{status:allowed?204:429});}
+ async alarm(){await this.state.storage.transaction(async txn=>{const counts=await txn.get('counts');if(counts && Date.parse(counts.day+'T00:00:00Z')+86400000<=Date.now())await txn.delete('counts');});}
 }
 export default {async fetch(request,env){try{return await handle(request,env);}catch{return Response.json({error:'AI je dočasne nedostupná.'},{status:503,headers:{'Cache-Control':'no-store','Vary':'Origin',...(request.headers.get('Origin')===env.ALLOWED_ORIGIN?{'Access-Control-Allow-Origin':env.ALLOWED_ORIGIN}:{})}});}}};
