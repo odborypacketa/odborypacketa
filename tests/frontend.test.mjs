@@ -10,10 +10,10 @@ function setup(config = {}, fetcher) {
   const fields = { name: 'Test', email: 'test@example.invalid', topic: 'Iné', message: 'Vymyslený podnet', consent: 'on', company: '' };
   const document = { querySelector: node, querySelectorAll: () => [], createElement: () => node('generated' + Math.random()), head: node('head') };
   const window = { ODBOROVY_ASISTENT_CONFIG: config, ODBORACIK_KNOWLEDGE_BASE: [], setTimeout(fn) { fn(); }, turnstile: { render() { return 0; }, getResponse() { return 'test-token'; }, reset() {} } };
-  const context = vm.createContext({ window, document, localStorage: { getItem: k => storage.get(k), setItem: (k,v) => storage.set(k,v) }, crypto, URL, AbortController, setTimeout, clearTimeout, FormData: class { constructor() {} *[Symbol.iterator]() { yield* Object.entries(fields); } }, fetch: async (url, options) => { calls.push({ url, ...options }); return fetcher ? fetcher(options) : Response.json({ok:false}); } });
-  for (const name of ['knowledge-base.js','legal-engine.js']) vm.runInContext(readFileSync(new URL('../odborovy-asistent-web/'+name,import.meta.url),'utf8'),context);
+  const context = vm.createContext({ window, document, localStorage: { getItem: k => storage.get(k), setItem: (k,v) => storage.set(k,v) }, crypto, URL, AbortSignal, AbortController, setTimeout, clearTimeout, FormData: class { constructor() {} *[Symbol.iterator]() { yield* Object.entries(fields); } }, fetch: async (url, options) => { calls.push({ url, ...options }); return fetcher ? fetcher(options) : Response.json({ok:false}); } });
+  for (const name of ['knowledge-base.js','legal-engine.js','ai-client.js']) vm.runInContext(readFileSync(new URL('../odborovy-asistent-web/'+name,import.meta.url),'utf8'),context);
   vm.runInContext(source, context); window.odboracikTurnstileReady?.();
-  return { nodes, form, fields, calls, storage, submit: () => form.listeners.submit({ preventDefault() {} }), chat: (question='test question') => { node('#chat-input').value = question; node('#chat-form').listeners.submit({ preventDefault() {} }); } };
+  return { nodes, form, fields, calls, storage, submit: () => form.listeners.submit({ preventDefault() {} }), chat: (question='test question') => { node('#chat-input').value = question; return node('#chat-form').listeners.submit({ preventDefault() {} }); } };
 }
 const cfg = { queryEndpoint: 'https://backend.invalid/api/queries', privacyUrl: 'https://www.odborypacketa.eu/privacy-test', turnstileSiteKey: 'test-site-key' };
 test('public chat never transmits or persists text', () => { const ui = setup(cfg); ui.chat(); assert.equal(ui.calls.length, 0); assert.equal(ui.storage.size, 0); });
@@ -47,4 +47,19 @@ test('follow-up button advances typo question to real membership instructions wi
  assert.ok(answer.children.some(n=>n.href==='https://www.odborypacketa.eu/#prihlaska'));
  assert.ok(answer.children.some(n=>/vyplnenou a podpísanou/.test(n.textContent)));
  assert.equal(ui.calls.length,0);assert.equal(ui.storage.size,0);
+});
+const aiCfg={...cfg,chatEndpoint:'https://ai.invalid/api/chat',aiTurnstileSiteKey:'test-site-key',aiPrivacyReady:true};
+test('configured AI remains local until visitor explicitly enables it',async()=>{
+ const ui=setup(aiCfg);await ui.chat('Ako sa prihlásiť?');assert.equal(ui.calls.length,0);
+ assert.equal(ui.nodes.get('#ai-panel').hidden,false);
+});
+test('opted-in AI renders text safely and never sends earlier local questions',async()=>{
+ const ui=setup(aiCfg,()=>Response.json({ok:true,mode:'ai',answer:'AI test <img onerror=alert(1)>',sources:[],links:[],suggestions:[]}));
+ await ui.chat('Miestna otázka');const checkbox=ui.nodes.get('#ai-enabled');checkbox.checked=true;checkbox.listeners.change();
+ await ui.chat('Ako sa prihlásiť?');assert.equal(ui.calls.length,1);assert.equal(JSON.parse(ui.calls[0].body).messages.length,1);
+ const reply=ui.nodes.get('#messages').children.at(-1);assert.ok(reply.children.some(n=>n.textContent==='AI test <img onerror=alert(1)>'));assert.equal(reply.innerHTML,undefined);assert.equal(ui.storage.size,0);
+});
+test('AI outage falls back to existing legal answer and unlocks controls',async()=>{
+ const ui=setup(aiCfg,()=>{throw Error('offline');});const checkbox=ui.nodes.get('#ai-enabled');checkbox.checked=true;checkbox.listeners.change();
+ await ui.chat('Čo sú odbory?');assert.equal(checkbox.disabled,false);assert.ok(ui.nodes.get('#messages').children.at(-1).children.some(n=>/organizácia zamestnancov/.test(n.textContent)));
 });

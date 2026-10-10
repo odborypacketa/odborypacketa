@@ -6,6 +6,25 @@ const contactDialog = document.querySelector('#contact-dialog');
 const contactForm = document.querySelector('#contact-form');
 const status = document.querySelector('#form-status');
 const config = window.ODBOROVY_ASISTENT_CONFIG || {};
+const aiChat = window.ODBORACIK_AI?.create(config);
+let aiWidget, aiBusy=false;
+const aiEnabled=document.querySelector('#ai-enabled');
+const aiStatus=document.querySelector('#ai-status');
+let turnstileLoading;
+function withTurnstile(init) {
+ if(window.turnstile){init();return Promise.resolve();}
+ if(!turnstileLoading)turnstileLoading=new Promise((resolve,reject)=>{
+  window.odboracikLoadTurnstile=resolve;
+  const script=document.createElement('script');script.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=odboracikLoadTurnstile';script.async=true;script.defer=true;script.onerror=reject;document.head.append(script);
+ });return turnstileLoading.then(init);
+}
+if(aiChat?.available) {
+ document.querySelector('#ai-panel').hidden=false;
+ aiEnabled.addEventListener('change',()=>{
+  aiChat.reset();aiStatus.textContent=aiEnabled.checked?'AI odosiela až nové otázky po zapnutí. Starší miestny chat sa neodosiela.':'Základné odpovede sa spracujú iba v prehliadači.';
+  if(aiEnabled.checked && aiWidget===undefined)withTurnstile(()=>{aiWidget=window.turnstile.render('#ai-check',{sitekey:config.aiTurnstileSiteKey,action:'chat',language:'sk'});}).catch(()=>{aiStatus.textContent='AI overenie sa nenačítalo. Použite základné odpovede.';});
+ });
+}
 const recordKey = 'odboracik-internal-records-v1';
 const recordsDialog = document.querySelector('#records-dialog');
 const recordsButton = document.querySelector('#open-records');
@@ -76,13 +95,37 @@ function addLegalMessage(result) {
   }
   messages.append(el); messages.scrollTop = messages.scrollHeight;
 }
-function reply(question) {
+async function reply(question) {
+  if(aiBusy){chatInput.value=question;return;}
   addMessage(question, 'user');
+  if(aiChat?.available && aiEnabled.checked) {
+    const token=aiWidget!==undefined&&window.turnstile?.getResponse(aiWidget);
+    if(!token){addMessage('Dokončite overenie proti spamu alebo vypnite AI režim. Otázka nebola odoslaná.','assistant');return;}
+    aiBusy=true;aiEnabled.disabled=true;aiStatus.textContent='AI pripravuje odpoveď…';
+    try {addAiMessage(await aiChat.respond(question,token));aiStatus.textContent='AI odpoveď je pripravená.';}
+    catch {addMessage('AI teraz neodpovedá. Nižšie je základná odpoveď z overenej bázy.','assistant');addLegalMessage(legalChat.respond(question));aiStatus.textContent='Použitá základná odpoveď.';}
+    finally {aiBusy=false;aiEnabled.disabled=false;window.turnstile?.reset(aiWidget);}
+    return;
+  }
   const result = legalChat ? legalChat.respond(question) : { cards: [], text: 'Odpovede sa nenačítali. Obnovte stránku a skúste znova.', contact: false };
   saveRecord({ channel: 'chat', topic: result.topicIds?.join(', ') || 'nezaradená otázka', question });
   window.setTimeout(() => addLegalMessage(result), 100);
 }
-chatForm.addEventListener('submit', event => { event.preventDefault(); const question = chatInput.value.trim(); if (!question) return; chatInput.value = ''; reply(question); });
+function addAiMessage(result) {
+ const el=document.createElement('div');el.className='message assistant';
+ const p=text=>{const node=document.createElement('p');node.textContent=text;el.append(node);};
+ for(const warning of result.warnings||[])p(warning);
+ p(result.answer);
+ for(const link of result.links){const a=document.createElement('a');a.textContent=link.label;a.href=link.url;a.target='_blank';a.rel='noopener noreferrer';a.className='answer-link';el.append(a);}
+ const sources=document.createElement('div');sources.className='legal-sources';
+ for(const ref of result.sources){const a=document.createElement('a');a.textContent=ref.name+' – '+ref.provision;a.href=ref.url;a.target='_blank';a.rel='noopener noreferrer';sources.append(a);}
+ const date=document.createElement('small');date.textContent='AI odpoveď · podklady overené 10. 10. 2026';sources.append(date);el.append(sources);
+ if(result.frame){const details=document.createElement('details');const title=document.createElement('summary');title.textContent='Postup pri individuálnom prípade';details.append(title);const body=document.createElement('p');body.textContent=result.frame;details.append(body);el.append(details);}
+ const choices=document.createElement('div');choices.className='follow-up-choices';
+ for(const question of (result.suggestions||[]).slice(0,3)){if(typeof question!=='string'||question.length>120)continue;const button=document.createElement('button');button.type='button';button.textContent=question;button.addEventListener('click',()=>reply(question));choices.append(button);}el.append(choices);
+ messages.append(el);messages.scrollTop=messages.scrollHeight;
+}
+chatForm.addEventListener('submit', event => { event.preventDefault(); const question = chatInput.value.trim(); if (!question) return; chatInput.value = ''; return reply(question); });
 document.querySelectorAll('.topic').forEach(button => button.addEventListener('click', () => reply(button.dataset.question)));
 function openContact() { contactDialog.showModal(); }
 document.querySelector('#open-contact').addEventListener('click', openContact);
@@ -106,11 +149,7 @@ if (config.internalStorageEnabled) {
   window.odboracikTurnstileReady = () => {
     turnstileWidget = window.turnstile.render('#spam-check', { sitekey: config.turnstileSiteKey, action: 'contact', language: 'sk' });
   };
-  const script = document.createElement('script');
-  script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=odboracikTurnstileReady&render=explicit';
-  script.async = true; script.defer = true;
-  script.onerror = () => { status.textContent = 'Overenie proti spamu sa nenačítalo. Obnovte stránku a skúste znova.'; };
-  document.head.append(script);
+  withTurnstile(window.odboracikTurnstileReady).catch(()=>{status.textContent='Overenie proti spamu sa nenačítalo. Obnovte stránku a skúste znova.';});
 }
 contactForm.addEventListener('submit', async event => {
   event.preventDefault(); if (sending || !contactForm.reportValidity()) return;

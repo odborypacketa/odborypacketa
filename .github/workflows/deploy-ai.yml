@@ -1,0 +1,41 @@
+name: Odboráčik – AI model
+on:
+  push:
+    branches: [main]
+    paths: ['ai/**', 'odborovy-asistent-web/knowledge-base.js', 'odborovy-asistent-web/legal-engine.js', 'scripts/build-ai.mjs', 'scripts/configure-ai.mjs', 'tests/**', '.github/workflows/deploy-ai.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: odboracik-ai
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: vars.AI_ENABLED == 'true'
+    environment: odboracik-production
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node scripts/build-ai.mjs
+      - run: node --test tests/*.test.mjs
+      - run: node scripts/configure-ai.mjs
+        env:
+          AI_WORKER_NAME: ${{ vars.AI_WORKER_NAME }}
+          AI_DAILY_REQUEST_LIMIT: ${{ vars.AI_DAILY_REQUEST_LIMIT }}
+          AI_PRIVACY_READY: ${{ vars.AI_PRIVACY_READY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          AI_TURNSTILE_SECRET_KEY: ${{ secrets.AI_TURNSTILE_SECRET_KEY }}
+          AI_SECRETS_FILE: ${{ runner.temp }}/odboracik-ai-secrets.json
+      - name: Nasadiť AI model
+        run: npx --yes wrangler@4 deploy --config ai/wrangler.json --secrets-file "$RUNNER_TEMP/odboracik-ai-secrets.json"
+      - name: Ďalší krok
+        run: echo "AI prijímač bol nasadený. Verejnú adresu /api/chat a sitekey zapojte do konfigurácie oboch priečinkov bota podľa ai/README.md." >> "$GITHUB_STEP_SUMMARY"
+      - name: Vymazať dočasné tajomstvá
+        if: always()
+        run: rm -f "$RUNNER_TEMP/odboracik-ai-secrets.json"

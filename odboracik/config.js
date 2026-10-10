@@ -1,8 +1,10 @@
-// Verejná konfigurácia. GitHub Actions ju doplní z repository variables.
-// Nikdy sem nevkladajte tajné kľúče. Chat sa na server neposiela.
+// Verejná konfigurácia. Nikdy sem nevkladajte tajné kľúče.
 window.ODBOROVY_ASISTENT_CONFIG = {
-  queryEndpoint: "",
-  privacyUrl: "",
-  turnstileSiteKey: "",
-  internalStorageEnabled: false
+  "queryEndpoint": "",
+  "privacyUrl": "",
+  "turnstileSiteKey": "",
+  "internalStorageEnabled": false,
+  "chatEndpoint": "",
+  "aiTurnstileSiteKey": "",
+  "aiPrivacyReady": false
 };

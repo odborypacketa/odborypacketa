@@ -19,3 +19,8 @@ test('root repository publishing and insecure endpoints rejected', () => {
   run({PAGES_SITE_DIRECTORY:'.'},(dir,result)=>assert.notEqual(result.status,0));
   run({QUERY_ENDPOINT:'http://insecure.invalid'},(dir,result)=>assert.notEqual(result.status,0));
 });
+test('AI public configuration stays disabled by default and validates its endpoint',()=>{
+ run({},(dir,result)=>{assert.equal(result.status,0);const source=readFileSync(join(dir,'site-output/odboracik/config.js'),'utf8');assert.match(source,/"aiPrivacyReady": false/);assert.ok(!source.includes('OPENAI_API_KEY'));});
+ run({AI_CHAT_ENDPOINT:'https://ai.invalid/api/chat',AI_TURNSTILE_SITE_KEY:'public-sitekey',AI_PRIVACY_READY:'true'},(dir,result)=>{assert.equal(result.status,0,result.stderr);const source=readFileSync(join(dir,'site-output/odboracik/config.js'),'utf8');assert.match(source,/public-sitekey/);assert.match(source,/"aiPrivacyReady": true/);});
+ run({AI_CHAT_ENDPOINT:'https://ai.invalid/anything'},(dir,result)=>assert.notEqual(result.status,0));
+});

@@ -4,3 +4,5 @@
 .answer-link{display:block;color:var(--navy);font-weight:700;margin:8px 0}.follow-up-choices{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px;white-space:normal}.follow-up-choices small{flex-basis:100%;color:var(--muted)}.follow-up-choices button{border:1px solid #b9cbd5;border-radius:16px;padding:7px 10px;background:#fff;color:var(--navy);font:13px Arial,sans-serif;cursor:pointer;text-align:left}.follow-up-choices button:hover{background:#ddebf3}
 
 .message{white-space:pre-wrap;overflow-wrap:anywhere}.message p{margin:0 0 10px}.message p:last-child{margin-bottom:0}.message strong{display:block;margin:12px 0 8px}.message details{margin:10px 0;font-size:13px}.message summary{cursor:pointer;color:var(--navy);font-weight:700}.message details p{margin:10px 0}.legal-sources{border-top:1px solid #d8e3e9;margin:12px 0;padding-top:8px;font-size:11px}.legal-sources a,.legal-sources small{display:block;margin:4px 0}.legal-sources a{color:#123B5D}.messages{max-height:540px}.message.assistant{max-width:95%}
+
+.ai-panel{padding:12px 24px;border-top:1px solid var(--line);font-size:12px}.ai-panel label{font-weight:700}.ai-panel p{margin:6px 0}.ai-panel a{color:var(--navy)}

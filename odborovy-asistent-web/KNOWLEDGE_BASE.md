@@ -1,6 +1,6 @@
 # Odboráčik – aktívna zdrojovaná báza
 
-44 právnych kariet a 7 praktických tém členstva a kontaktu overených 10. októbra 2026. Obsah je v knowledge-base.js, spracovanie v legal-engine.js. Bot poskytuje pripravené vysvetlenia lokálne v prehliadači, rozlišuje viac tém a udržiava kontext nadväzujúcich otázok. Nepoužíva externý jazykový model. Otázky neposiela na server.
+44 právnych kariet a 7 praktických tém členstva a kontaktu overených 10. októbra 2026. Obsah je v knowledge-base.js, spracovanie v legal-engine.js. Bot poskytuje pripravené vysvetlenia lokálne v prehliadači, rozlišuje viac tém a udržiava kontext nadväzujúcich otázok. Predvolene nepoužíva externý jazykový model a otázky neposiela na server. Voliteľné AI pripojenie je pripravené v ai/; zapne sa až po serverovej konfigurácii a výslovnom zapnutí návštevníkom. Podrobnosti v ai/README.md.
 
 Verzia 1.1 rozpoznáva vybrané preklepy doménových slov, nadväzujúce otázky bez zopakovania témy a zmenu témy. Pri odboroch ponúka prihlášku, príspevok, doručenie, rozhodnutie a súkromie; pri dovolenke a výpovedi relevantné ďalšie otázky. Klikateľné pokračovania vedú cez rovnaký rozhovorový mechanizmus. Pri nejasnej otázke žiada spresnenie, neodvodzuje členstvo ani nevymýšľa odpoveď.
 

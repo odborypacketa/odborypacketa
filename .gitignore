@@ -6,3 +6,5 @@ backend/.wrangler/
 site-output/
 *secrets*.json
 *export*.json
+ai/wrangler.json
+ai/.wrangler/
