@@ -32,6 +32,10 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           AI_TURNSTILE_SECRET_KEY: ${{ secrets.AI_TURNSTILE_SECRET_KEY }}
           AI_SECRETS_FILE: ${{ runner.temp }}/odboracik-ai-secrets.json
+      - name: Pripraviť verejnú adresu AI
+        run: node scripts/ensure-ai-subdomain.mjs
+        env:
+          AI_WORKERS_SUBDOMAIN: ${{ vars.AI_WORKERS_SUBDOMAIN }}
       - name: Nasadiť AI model
         run: npx --yes wrangler@4 deploy --config ai/wrangler.json --secrets-file "$RUNNER_TEMP/odboracik-ai-secrets.json"
       - name: Ďalší krok
