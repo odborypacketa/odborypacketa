@@ -103,7 +103,7 @@ async function reply(question) {
     if(!token){addMessage('Dokončite overenie proti spamu alebo vypnite AI režim. Otázka nebola odoslaná.','assistant');return;}
     aiBusy=true;aiEnabled.disabled=true;aiStatus.textContent='AI pripravuje odpoveď…';
     try {addAiMessage(await aiChat.respond(question,token));aiStatus.textContent='AI odpoveď je pripravená.';}
-    catch {addMessage('AI teraz neodpovedá. Nižšie je základná odpoveď z overenej bázy.','assistant');addLegalMessage(legalChat.respond(question));aiStatus.textContent='Použitá základná odpoveď.';}
+    catch(error) {addMessage((error.message||'AI teraz neodpovedá.')+' Nižšie je základná odpoveď z overenej bázy.','assistant');addLegalMessage(legalChat.respond(question));aiStatus.textContent='Použitá základná odpoveď.';}
     finally {aiBusy=false;aiEnabled.disabled=false;window.turnstile?.reset(aiWidget);}
     return;
   }

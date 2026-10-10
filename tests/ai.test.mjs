@@ -94,3 +94,10 @@ test('generated server sources match active browser knowledge and engine',()=>{
  assert.equal(readFileSync(new URL('../ai/knowledge.mjs',import.meta.url),'utf8').split('export default ')[1].trim().replace(/;$/,''),JSON.stringify(parsed));
  assert.ok(readFileSync(new URL('../ai/legal-engine.mjs',import.meta.url),'utf8').includes(readFileSync(new URL('../odborovy-asistent-web/legal-engine.js',import.meta.url),'utf8').replace("typeof window !== 'undefined' ? window : globalThis",'root')));
 });
+
+test('provider failure exposes only an approved category, never raw private details',async()=>{
+ for(const code of ['insufficient_quota','private-detail']){
+ const remote=async url=>url.includes('siteverify')?Response.json({success:true,hostname:'www.odborypacketa.eu',action:'chat'}):Response.json({error:{code,message:'private account data',api_key:'secret'}},{status:429});
+ const result=await (await handle(request(),env,remote)).json();assert.equal(result.code,code==='insufficient_quota'?code:'provider_429');assert.ok(!JSON.stringify(result).includes('private'));assert.ok(!JSON.stringify(result).includes('secret'));
+ }
+});

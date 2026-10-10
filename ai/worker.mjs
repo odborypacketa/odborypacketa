@@ -62,7 +62,7 @@ export async function handle(request,env,remote=fetch) {
  if(!budget.ok)return reply({error:'Denný limit AI bol dosiahnutý. Použite základné odpovede alebo kontaktujte odbory.'},429);
  const local=serverResult(messages);
  const response=await remote('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${env.OPENAI_API_KEY}`},body:JSON.stringify({model:env.OPENAI_MODEL||'gpt-5.4-mini-2026-03-17',store:false,max_output_tokens:1300,reasoning:{effort:'none'},instructions:instructions+'\nDátum servera: '+day+'\nOVERENÁ BÁZA:\n'+context+'\nVÝPOČTY A UPOZORNENIA SERVERA:\n'+JSON.stringify({calculations:local.calculations||[],warnings:local.warnings||[]}),input:messages,text:{format:{type:'json_schema',name:'odboracik_answer',strict:true,schema}}}),signal:AbortSignal.timeout(25000)});
- if(!response.ok)return reply({error:'AI neodpovedala. Skúste základné odpovede.'},503);
+ if(!response.ok){const failure=await response.json().catch(()=>({}));const allowed=['insufficient_quota','invalid_api_key','model_not_found','unsupported_value','invalid_json_schema'];const code=allowed.includes(failure.error?.code)?failure.error.code:'provider_'+response.status;return reply({error:'AI neodpovedala. Skúste základné odpovede.',code},503);}
  const result=await response.json();if(result.status!=='completed')return reply({error:'AI odpoveď nebola dokončená.'},503);
  const text=(result.output||[]).flatMap(item=>item.type==='message'?item.content||[]:[]).filter(c=>c.type==='output_text').map(c=>c.text).join('');
  try{return reply(formatAnswer(JSON.parse(text),local));}catch{return reply({error:'Odpoveď sa nepodarilo overiť.'},503);}
