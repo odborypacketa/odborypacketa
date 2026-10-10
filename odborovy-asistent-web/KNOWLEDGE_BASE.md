@@ -1,23 +1,7 @@
-# Znalostná báza Odboráčika
+# Odboráčik – aktívna zdrojovaná báza
 
-Odpovede v `knowledge-base.js` sú určené iba na verejné, všeobecné otázky. Automatický chat nesmie rozhodovať individuálny spor, vypočítavať konkrétnu právnu lehotu ani prijímať citlivé údaje.
+44 právnych kariet overených 10. októbra 2026. Obsah je v knowledge-base.js, spracovanie v legal-engine.js. Bot poskytuje pripravené vysvetlenia lokálne v prehliadači, rozlišuje viac tém a udržiava kontext nadväzujúcich otázok. Nepoužíva externý jazykový model. Otázky neposiela na server.
 
-## Témy, ktoré Odboráčik pokrýva
+Zdrojové podklady a 84 akceptačných scenárov sú v legal-research. Testy kontrolujú rozpoznanie tém, obsah a hranice odpovedí, vybrané výpočty, ochranu dát a integráciu. Zložité individuálne závery zostávajú na overení odbormi alebo advokátom.
 
-- úloha odborov, členstvo a dôverný kontakt;
-- pracovná zmluva, dodatok a dohody;
-- mzda, pracovný čas, nadčas, dovolenka a školenia;
-- skončenie pracovného pomeru, pracovný pomer na určitú dobu a organizačné zmeny;
-- BOZP, pracovný úraz a podnet na inšpektorát práce;
-- diskriminácia, šikana, odveta a komunikácia s vedením;
-- monitorovanie na pracovisku, ochrana osobných údajov a agentúrna práca;
-- kolektívna zmluva, kolektívne vyjednávanie, informovanie a úloha odborových funkcionárov.
-
-## Pravidlá aktualizácie
-
-1. Právny obsah pred vložením overte v aktuálnom znení predpisu a označte dátum kontroly v internom registri.
-2. Odpoveď má vysvetliť tému a uviesť bezpečný ďalší krok; nemá sľubovať výsledok ani konštatovať porušenie zákona.
-3. Pri skončení pracovného pomeru, diskriminácii, odvete, BOZP incidente, právnej lehote, štrajku alebo osobných údajoch vždy nastavte `contact: true`.
-4. Nepoužívajte v odpovediach mená zamestnancov, interné prípady, členské údaje ani neoverené výsledky rokovaní.
-
-Právny základ pre všeobecné odborové témy je priebežne overovaný najmä podľa Zákonníka práce a zákona o kolektívnom vyjednávaní. Presný skutkový stav, zmluvy a účinné znenie zákona však musia byť pri osobnom prípade overené osobitne.
+Pri iných rokoch a po 31. decembri 2026 zobrazí bot upozornenie na potrebu nového overenia. Neoverené ročné sumy nepotvrdzuje pre iný rok. Pred aktualizáciou bázy preveriť príslušné verzie zákonov a zmeniť testy spolu s kartami.

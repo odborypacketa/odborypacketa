@@ -1,4 +1,4 @@
-const answers = window.ODBORACIK_KNOWLEDGE_BASE || [];
+const legalChat = window.ODBORACIK_LEGAL_ENGINE?.create(window.ODBORACIK_LEGAL_BASE);
 const messages = document.querySelector('#messages');
 const chatForm = document.querySelector('#chat-form');
 const chatInput = document.querySelector('#chat-input');
@@ -32,12 +32,43 @@ function exportRecords() {
   const a = document.createElement('a'); a.href = url; a.download = 'evidencia-dotazov-odboracik.csv'; a.click(); URL.revokeObjectURL(url);
 }
 function addMessage(text, who) { const el = document.createElement('div'); el.className = `message ${who}`; el.textContent = text; messages.append(el); messages.scrollTop = messages.scrollHeight; }
+function addLegalMessage(result) {
+  const el = document.createElement('div'); el.className = 'message assistant';
+  const paragraph = text => { const p = document.createElement('p'); p.textContent = text; el.append(p); };
+  if (!result.cards.length) paragraph(result.text);
+  for (const warning of result.warnings || []) paragraph(warning);
+  if (result.continuation) paragraph(result.continuation);
+  for (const calculation of result.calculations || []) paragraph(calculation);
+  for (const card of result.cards) {
+    if (result.cards.length > 1) { const title = document.createElement('strong'); title.textContent = card.title; el.append(title); }
+    paragraph(card.answer);
+    // Material conditions remain available with the answer; long explanations can be expanded.
+    const details = document.createElement('details');
+    details.open = card.risk === 'urgent_legal' || card.risk === 'emergency';
+    const summary = document.createElement('summary'); summary.textContent = 'Podmienky, výnimky a lehoty'; details.append(summary);
+    const detail = document.createElement('p'); detail.textContent = card.detail; details.append(detail);
+    for (const caveat of card.exceptions) { const p = document.createElement('p'); p.textContent = caveat; details.append(p); }
+    el.append(details);
+    const sources = document.createElement('div'); sources.className = 'legal-sources';
+    for (const ref of card.refs) {
+      const a = document.createElement('a'); a.textContent = ref.name + ' – ' + ref.provision;
+      a.href = ref.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; sources.append(a);
+    }
+    const date = document.createElement('small'); date.textContent = 'Overené 10. 10. 2026 · všeobecné informácie'; sources.append(date); el.append(sources);
+  }
+  if (result.questions?.length) paragraph('Na spresnenie: ' + result.questions.join(' '));
+  if (result.frame) {
+    const details = document.createElement('details'); const summary = document.createElement('summary');
+    summary.textContent = 'Postup pri individuálnom prípade'; details.append(summary);
+    const frame = document.createElement('p'); frame.textContent = result.frame; details.append(frame); el.append(details);
+  }
+  messages.append(el); messages.scrollTop = messages.scrollHeight;
+}
 function reply(question) {
   addMessage(question, 'user');
-  const found = answers.find(({keywords}) => keywords.test(question.toLowerCase()));
-  saveRecord({ channel: 'chat', topic: found?.contact ? 'vyžaduje kontakt' : 'základná otázka', question });
-  const response = found ? found.answer : 'Túto otázku nechceme zjednodušiť automatickou odpoveďou. Pošlite nám stručný opis cez formulár a odbory sa vám ozvú.';
-  window.setTimeout(() => { addMessage(response, 'assistant'); if (found?.contact || !found) document.querySelector('#open-contact').focus(); }, 250);
+  const result = legalChat ? legalChat.respond(question) : { cards: [], text: 'Odpovede sa nenačítali. Obnovte stránku a skúste znova.', contact: false };
+  saveRecord({ channel: 'chat', topic: result.topicIds?.join(', ') || 'nezaradená otázka', question });
+  window.setTimeout(() => addLegalMessage(result), 100);
 }
 chatForm.addEventListener('submit', event => { event.preventDefault(); const question = chatInput.value.trim(); if (!question) return; chatInput.value = ''; reply(question); });
 document.querySelectorAll('.topic').forEach(button => button.addEventListener('click', () => reply(button.dataset.question)));
