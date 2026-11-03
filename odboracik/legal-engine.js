@@ -34,7 +34,7 @@
     vypoved_zamestnavatel: /dostal.*vypoved|vypoved.*(od firmy|od zamestnavat)|zamestnavatel.*(prepust|vypoved)|prepusti.*bez dovod|sef.*(vyhod|prepust)/,
     vypovedna_doba_zamestnavatel: /vypovedn.*dob.*(nadbytoc|prepust|zamestnavat)|nadbytoc.*vypoved/,
     okamzite_skoncenie: /okamzit.*skonc|skonc.*okamzit|mzd.*(nepris|neprisl|nevyplat)|nepris.*mzda|nevyplat.*mzda|odist hned|uz nejdem do prace/,
-    skusobna_doba: /skusobn/,
+    skusobna_doba: /skusobn|skusobk/,
     doba_urcita: /dob.*urcit|konci.*zmluva|zmluva.*konci/,
     odstupne: /odstupn/,
     neplatne_skoncenie: /neplatn.*vypoved|napadnut.*vypoved|napadn.*skonc|nezakonn.*prepust|prepust.*nezakon|dokedy.*zalov|zalob|sud.*lehot/,
@@ -48,7 +48,7 @@
     dovolenka_kratenie: /krat.*dovolen|zobrat.*dovolen|vezm.*dovolen|dovolen.*absenc/,
     pracovny_cas: /kolko.*hodin.*(pracovat|prevadz|tyzden)|pracovn.*cas|dvojzmenn|trojzmenn/,
     rozvrh: /zmenit.*zmen|rozvrh|vecer pred nastup|zmena.*posledn/,
-    prestavky: /prestav|sesthodinov|presne sest|presne 6 hodin|pat hodinov|pathodinov/,
+    prestavky: /pauz|prestav|sesthodinov|presne sest|presne 6 hodin|pat hodinov|pathodinov/,
     odpocinok: /odpocin|volna.*medzi zmen|hodin.*medzi zmen/,
     nadcas: /nadcas/,
     nadcas_odmena: /nadcas.*(mzd|plat|odmen|priplat)|(?:plat|odmen|priplat).*nadcas|nahradn.*voln.*nadcas/,
@@ -62,7 +62,7 @@
     lekar: /paragraf.*lekar|lekar.*(platen|volno|den)|vlastn.*lekar|navstev.*lekar/,
     sprievod: /sprievod|sprevad|diet.*lekar/,
     prekazky_oznamenie: /oznamit.*pn|dokazat.*lekar|preukaz.*prekaz|prekazk.*oznam/,
-    pn_platba: /\bpn\b|praceneschop/,
+    pn_platba: /\bpn\b|praceneschop|peenk|marod/,
     stravovanie: /stravn|stravov|gastrolist|\bjedl|presne 4 hodin/,
     bozp_nebezpecenstvo: /nebezpec|ohrozen|iskri|odmietnut.*pracu|bezpecnost.*praci/,
     ochranne_prostriedky: /ochrann.*(pomock|prostried)|bezpecnostn.*topank|pracovn.*odev/,
@@ -140,7 +140,7 @@
       active = selected;
       if (!isFollowUp && !detailFollowUp) lastQuestion = question;
       const now = clock().toISOString().slice(0,10);
-      const stale = now < '2026-09-01' || now > '2026-12-31';
+      const stale = now < '2026-09-01' || now > '2026-12-01';
       const historical = /(?:rok(?:u)?|za rok|v roku)\s*(20\d\d)/.exec(q);
       const outsideYear = historical && historical[1] !== '2026';
       const responseCards = selected.map(id => byId.get(id)).filter(Boolean);
@@ -208,3 +208,4 @@
   }
   root.ODBORACIK_LEGAL_ENGINE = {create,normalize};
 })(typeof window !== 'undefined' ? window : globalThis);
+

@@ -111,9 +111,19 @@ test('provider failure exposes only an approved category, never raw private deta
  }
 });
 
-test('knowledge selection retains follow-up topics and reduces irrelevant input',()=>{
- const selected=selectContext(payload.messages);assert.ok(selected.some(c=>c.id==='odbory'));assert.ok(selected.some(c=>c.id==='clenstvo_prihlaska'));assert.ok(JSON.stringify(selected).length<20000);
+test('all vetted topics remain available regardless of phrasing',()=>{
+ const selected=selectContext(payload.messages);assert.ok(selected.some(c=>c.id==='odbory'));assert.ok(selected.some(c=>c.id==='clenstvo_prihlaska'));assert.equal(selected.filter(c=>!c.id.startsWith('skill_')).length,51);
  const legal=selectContext([{role:'user',content:'Aký nárok mám na dovolenku?'}]);assert.ok(legal.some(c=>c.id==='dovolenka_vymera'));
+});
+test('colloquial questions receive the full verified basis and only factual citation IDs',async()=>{
+ const mock=remoteFactory({answer:'Pri zmene dlhšej ako šesť hodín je prestávka 30 minút.',topicIds:['prestavky'],suggestions:[]});
+ const body={...payload,messages:[{role:'user',content:'Koľko mi musia dať pauzu na jedenie počas osemhodinovej zmeny?'}]};
+ const response=await handle(request(body),env,mock.remote);assert.equal(response.status,200);const data=await response.json();assert.ok(data.sources.some(s=>s.provision.includes('91')));
+ const sent=JSON.parse(mock.calls.at(-1).options.body);const ids=sent.text.format.schema.properties.topicIds.items.enum;assert.equal(ids.length,51);assert.ok(ids.includes('prestavky')&&ids.includes('skusobna_doba'));assert.ok(!ids.some(id=>id.startsWith('skill_')));assert.match(sent.instructions,/Prestávka v práci/);
+});
+test('methodology alone cannot support a legal claim and missing citations cannot borrow the local topic',()=>{
+ assert.throws(()=>formatAnswer({answer:'Každý má 100 dní dovolenky.',topicIds:['skill_legal'],suggestions:[]},{}));
+ const result=formatAnswer({answer:'Každý má 100 dní dovolenky.',topicIds:[],suggestions:[]},{topicIds:['dovolenka_vymera']});assert.doesNotMatch(result.answer,/100/);assert.equal(result.sources.length,0);
 });
 
 test('complete union skill is available with mode-specific references',()=>{

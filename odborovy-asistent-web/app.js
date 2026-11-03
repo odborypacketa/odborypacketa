@@ -10,6 +10,7 @@ const aiChat = window.ODBORACIK_AI?.create(config);
 let aiWidget, aiBusy=false;
 const aiEnabled=document.querySelector('#ai-enabled');
 const aiStatus=document.querySelector('#ai-status');
+const chatMode=document.querySelector('#chat-mode');
 let turnstileLoading;
 function withTurnstile(init) {
  if(window.turnstile){init();return Promise.resolve();}
@@ -21,7 +22,7 @@ function withTurnstile(init) {
 if(aiChat?.available) {
  document.querySelector('#ai-panel').hidden=false;
  aiEnabled.addEventListener('change',()=>{
-  aiChat.reset();aiStatus.textContent=aiEnabled.checked?'AI odosiela až nové otázky po zapnutí. Starší miestny chat sa neodosiela.':'Základné odpovede sa spracujú iba v prehliadači.';
+  aiChat.reset();chatMode.textContent=aiEnabled.checked?'online · AI zapnutá':'online · základné odpovede';aiStatus.textContent=aiEnabled.checked?'AI odosiela až nové otázky po zapnutí. Starší miestny chat sa neodosiela.':'Základné odpovede sa spracujú iba v prehliadači.';
   if(aiEnabled.checked && aiWidget===undefined)withTurnstile(()=>{aiWidget=window.turnstile.render('#ai-check',{sitekey:config.aiTurnstileSiteKey,action:'chat',language:'sk'});}).catch(()=>{aiStatus.textContent='AI overenie sa nenačítalo. Použite základné odpovede.';});
  });
 }
@@ -101,9 +102,9 @@ async function reply(question) {
   if(aiChat?.available && aiEnabled.checked) {
     const token=aiWidget!==undefined&&window.turnstile?.getResponse(aiWidget);
     if(!token){addMessage('Dokončite overenie proti spamu alebo vypnite AI režim. Otázka nebola odoslaná.','assistant');return;}
-    aiBusy=true;aiEnabled.disabled=true;aiStatus.textContent='AI pripravuje odpoveď…';
-    try {addAiMessage(await aiChat.respond(question,token));aiStatus.textContent='AI odpoveď je pripravená.';}
-    catch(error) {addMessage((error.message||'AI teraz neodpovedá.')+' Nižšie je základná odpoveď z overenej bázy.','assistant');addLegalMessage(legalChat.respond(question));aiStatus.textContent='Použitá základná odpoveď.';}
+    aiBusy=true;aiEnabled.disabled=true;aiStatus.textContent='AI pripravuje odpoveď…';chatMode.textContent='AI pripravuje odpoveď…';
+    try {addAiMessage(await aiChat.respond(question,token));aiStatus.textContent='AI odpoveď je pripravená.';chatMode.textContent='online · AI odpovede';}
+    catch(error) {addMessage((error.message||'AI teraz neodpovedá.')+' Nižšie je základná odpoveď z overenej bázy.','assistant');addLegalMessage(legalChat.respond(question));aiStatus.textContent='Použitá základná odpoveď.';chatMode.textContent='online · základná odpoveď';}
     finally {aiBusy=false;aiEnabled.disabled=false;window.turnstile?.reset(aiWidget);}
     return;
   }
@@ -119,7 +120,7 @@ function addAiMessage(result) {
  for(const link of result.links){const a=document.createElement('a');a.textContent=link.label;a.href=link.url;a.target='_blank';a.rel='noopener noreferrer';a.className='answer-link';el.append(a);}
  const sources=document.createElement('div');sources.className='legal-sources';
  for(const ref of result.sources){const a=document.createElement('a');a.textContent=ref.name+' – '+ref.provision;a.href=ref.url;a.target='_blank';a.rel='noopener noreferrer';sources.append(a);}
- const date=document.createElement('small');date.textContent='AI odpoveď · podklady overené 10. 10. 2026';sources.append(date);el.append(sources);
+ const date=document.createElement('small');date.textContent=result.sources.length?'AI odpoveď · podklady overené 10. 10. 2026':'AI · otázka na spresnenie bez právneho záveru';sources.append(date);el.append(sources);
  if(result.frame){const details=document.createElement('details');const title=document.createElement('summary');title.textContent='Postup pri individuálnom prípade';details.append(title);const body=document.createElement('p');body.textContent=result.frame;details.append(body);el.append(details);}
  const choices=document.createElement('div');choices.className='follow-up-choices';
  for(const question of (result.suggestions||[]).slice(0,3)){if(typeof question!=='string'||question.length>120)continue;const button=document.createElement('button');button.type='button';button.textContent=question;button.addEventListener('click',()=>reply(question));choices.append(button);}el.append(choices);

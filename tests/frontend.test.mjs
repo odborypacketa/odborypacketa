@@ -65,4 +65,7 @@ test('AI outage falls back to existing legal answer and unlocks controls',async(
  const ui=setup(aiCfg,()=>{throw Error('offline');});const checkbox=ui.nodes.get('#ai-enabled');checkbox.checked=true;checkbox.listeners.change();
  await ui.chat('Čo sú odbory?');assert.equal(checkbox.disabled,false);assert.ok(ui.nodes.get('#messages').children.at(-1).children.some(n=>/organizácia zamestnancov/.test(n.textContent)));
 });
+test('mode label follows consent, successful AI and fallback',async()=>{
+ const ui=setup(aiCfg,()=>Response.json({ok:true,mode:'ai',answer:'Overená odpoveď.',sources:[],links:[],suggestions:[]}));const checkbox=ui.nodes.get('#ai-enabled');checkbox.checked=true;checkbox.listeners.change();assert.match(ui.nodes.get('#chat-mode').textContent,/AI zapnutá/);await ui.chat('Čo sú odbory?');assert.match(ui.nodes.get('#chat-mode').textContent,/AI odpovede/);checkbox.checked=false;checkbox.listeners.change();assert.match(ui.nodes.get('#chat-mode').textContent,/základné odpovede/);
+});
 

@@ -5,6 +5,10 @@ import {readFileSync} from 'node:fs';
 const ctx=vm.createContext({window:{},Date});
 for(const name of ['knowledge-base.js','legal-engine.js']) vm.runInContext(readFileSync(new URL('../odborovy-asistent-web/'+name,import.meta.url),'utf8'),ctx);
 const create=()=>ctx.window.ODBORACIK_LEGAL_ENGINE.create(ctx.window.ODBORACIK_LEGAL_BASE,()=>new Date('2026-10-10'));
+test('colloquial break and probation questions work in local mode',()=>{
+ assert.ok(create().respond('Koľko mi musia dať pauzu na jedenie?').topicIds.includes('prestavky'));
+ assert.ok(create().respond('Potrebujem pomoc so skončením v skúšobke').topicIds.includes('skusobna_doba'));
+});
 for(const spelling of ['co su to odobory','Čo sú to odobry?','co su odbori','Čo vlastne robia odbory?']) test('union spelling: '+spelling,()=>{
  assert.ok(create().respond(spelling).topicIds.includes('odbory'));
 });
@@ -87,3 +91,4 @@ test('controlled spelling correction preserves numbers and negation',()=>{
 test('union representation and support questions recognise their topic',()=>{
  for(const q of ['v čom ma odbory zastúpia?','S čím mi odbory pomôžu?','aké právomoci majú odbory?'])assert.ok(create().respond(q).topicIds.includes('odbory'),q);
 });
+

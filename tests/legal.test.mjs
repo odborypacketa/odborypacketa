@@ -5,6 +5,9 @@ import {readFileSync} from 'node:fs';
 const context = vm.createContext({window:{},Date});
 for (const name of ['knowledge-base.js','legal-engine.js']) vm.runInContext(readFileSync(new URL('../odborovy-asistent-web/'+name,import.meta.url),'utf8'), context);
 const create = (date='2026-10-10') => context.window.ODBORACIK_LEGAL_ENGINE.create(context.window.ODBORACIK_LEGAL_BASE, () => new Date(date));
+test('new Labour Code version requires verification from 2 December, not only next year',()=>{
+ assert.ok(create('2026-12-02').respond('Koľko mám dovolenky?').warnings.some(w=>/overiť/.test(w)));
+});
 const scenarios = JSON.parse(readFileSync(new URL('../legal-research/scenare.json',import.meta.url)));
 for (const scenario of scenarios.cases) test(`${scenario.id}: ${scenario.input}`,()=>{
  const result=create().respond(scenario.input);
@@ -71,3 +74,4 @@ test('annual holiday is not automatically a remaining balance',()=>{
  const r=create().respond('Mám 35 rokov, koľko mám dovolenky?');
  assert.match(r.text,/zostatok/);assert.match(r.text,/päť/);
 });
+
