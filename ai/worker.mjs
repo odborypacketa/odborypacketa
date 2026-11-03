@@ -59,8 +59,8 @@ export async function handle(request,env,remote=fetch) {
  if(request.method==='OPTIONS')return new Response(null,{status:204,headers});
  if(request.method!=='POST')return reply({error:'Použite POST.'},405);
  if(!env.OPENAI_API_KEY || !env.TURNSTILE_SECRET_KEY || !env.LIMITS || env.AI_PRIVACY_READY!=='true')return reply({error:'AI zatiaľ nie je zapnutá.',code:'configuration'},503);
- let data;try{data=await boundedJson(request);}catch{return reply({error:'Neplatná alebo príliš veľká otázka.'},400);}
- const messages=validateChat(data);if(!messages)return reply({error:'Skontrolujte otázku a súhlas.'},400);
+ let data;try{data=await boundedJson(request);}catch(error){return reply({error:'Neplatná alebo príliš veľká otázka.',code:error.message==='size'?'request_size':'invalid_request'},400);}
+ const messages=validateChat(data);if(!messages)return reply({error:'Skontrolujte otázku a súhlas.',code:'invalid_request'},400);
  // Tokens are one-use; never trust a client-only challenge result.
  const verified=await remote('https://challenges.cloudflare.com/turnstile/v0/siteverify',{method:'POST',body:new URLSearchParams({secret:env.TURNSTILE_SECRET_KEY,response:data.turnstileToken}),signal:AbortSignal.timeout(10000)});
  if(!verified.ok)return reply({error:'Overenie nie je dostupné.'},503);
@@ -90,3 +90,4 @@ export class ChatLimits {
  async alarm(){await this.state.storage.transaction(async txn=>{const counts=await txn.get('counts');if(counts && Date.parse(counts.day+'T00:00:00Z')+86400000<=Date.now())await txn.delete('counts');});}
 }
 export default {async fetch(request,env){try{return await handle(request,env);}catch(error){return Response.json({error:'AI je dočasne nedostupná.',code:['TimeoutError','AbortError'].includes(error.name)?'timeout':'service_error'},{status:503,headers:{'Cache-Control':'no-store','Vary':'Origin',...(request.headers.get('Origin')===env.ALLOWED_ORIGIN?{'Access-Control-Allow-Origin':env.ALLOWED_ORIGIN}:{})}});}}};
+

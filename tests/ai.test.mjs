@@ -73,9 +73,18 @@ test('idle counters expire by alarm, but delayed alarm preserves the current day
  assert.equal(scheduled,Date.parse(day+'T00:00:00Z')+86400000);
  await limits.alarm();assert.equal(value.total,1);
 });
-const ctx=vm.createContext({window:{},URL,AbortSignal,fetch});
+const ctx=vm.createContext({window:{},URL,AbortSignal,fetch,TextEncoder});
 for(const name of ['knowledge-base.js','ai-client.js'])vm.runInContext(readFileSync(new URL('../odborovy-asistent-web/'+name,import.meta.url),'utf8'),ctx);
 const config={chatEndpoint:'https://ai.invalid/api/chat',aiTurnstileSiteKey:'test',aiPrivacyReady:true};
+test('long conversations trim old exchanges against both character and UTF-8 limits',async()=>{
+ for(const character of ['a','á','🧑']){
+  const bodies=[];const answer=character.repeat(character.length===1?3500:1750);
+  const client=ctx.window.ODBORACIK_AI.create(config,async(url,options)=>{bodies.push(options.body);return Response.json({ok:true,mode:'ai',answer,sources:[],links:[],suggestions:[]});});
+  for(let turn=0;turn<12;turn++)await client.respond('x'.repeat(1195)+String(turn),'t'.repeat(2048));
+  for(let turn=0;turn<bodies.length;turn++){const body=bodies[turn],data=JSON.parse(body);assert.ok(Buffer.byteLength(body)<=25000);assert.ok(validateChat(data));assert.equal(data.messages.at(-1).content,'x'.repeat(1195)+String(turn));assert.ok(data.messages.length<=9);assert.equal(data.messages[0].role,'user');}
+  assert.ok(JSON.parse(bodies.at(-1)).messages.length<9,'old history was removed');
+ }
+});
 const result={ok:true,mode:'ai',answer:'Vyplňte prihlášku.',sources:[],links:[],suggestions:[]};
 test('AI client needs complete server configuration',()=>{
  for(const cfg of [{},{...config,chatEndpoint:'http://ai.invalid/api/chat'},{...config,aiPrivacyReady:false},{...config,chatEndpoint:'https://user:secret@ai.invalid/api/chat'}])assert.equal(ctx.window.ODBORACIK_AI.configured(cfg),false);
@@ -121,3 +130,4 @@ test('incomplete and unsafe model answers have distinct non-private failure cate
  const remote=async url=>url.includes('siteverify')?Response.json({success:true,hostname:'www.odborypacketa.eu',action:'chat'}):Response.json(provider);const result=await handle(request(),env,remote);assert.equal(result.status,503);assert.equal((await result.json()).code,code);
  }
 });
+
