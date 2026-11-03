@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Odboráčik – základné odpovede a bezpečný kontakt pre zamestnancov Packeta Slovakia.">
   <title>Odboráčik | ZO Packeta Slovakia</title>
-  <link rel="stylesheet" href="styles.css?v=ai-repair-20261010c">
+  <link rel="stylesheet" href="styles.css?v=repairs-20261103-contact">
 </head>
 <body>
   <main class="page-shell">
@@ -52,8 +52,13 @@
 
   <dialog class="contact-dialog" id="contact-dialog" aria-labelledby="contact-title">
     <div class="dialog-head"><div><p class="eyebrow">DÔVERNÝ KONTAKT</p><h2 id="contact-title">Napíšte odborom</h2></div><button class="close-dialog" id="close-contact" type="button" aria-label="Zavrieť formulár">×</button></div>
-    <p class="dialog-intro">Odoslaním sa dotaz uloží do evidencie a odošle e-mailom na info@odborypacketa.eu. Ak e-mailová služba neodpovie, podanie zostane v evidencii na opakované odoslanie. Opíšte vec stručne. Neposielajte heslá, rodné číslo ani zdravotnú dokumentáciu.</p>
-    <form class="contact-form" id="contact-form" novalidate>
+    <p class="dialog-intro" id="contact-intro">Zložitejšiu alebo osobnú vec riešte priamo s odbormi. Neposielajte heslá, rodné číslo ani zdravotnú dokumentáciu.</p>
+    <div id="contact-fallback">
+      <p><a class="answer-link" href="mailto:info@odborypacketa.eu">Napísať na info@odborypacketa.eu</a></p>
+      <p>Odkaz otvorí váš e-mailový program. Správu v ňom napíšete a odošlete sami. Tento web ju automaticky neodosiela ani neukladá do evidencie.</p>
+      <p>Ak sa e-mailový program neotvorí, použite adresu <strong>info@odborypacketa.eu</strong> vo svojej pošte.</p>
+    </div>
+    <form class="contact-form" id="contact-form" novalidate hidden>
       <div class="form-grid"><label>Meno alebo prezývka<input name="name" maxlength="80" autocomplete="name"></label><label>E-mail <b>*</b><input type="email" name="email" maxlength="120" required autocomplete="email"></label></div>
       <label>Téma <b>*</b><select name="topic" required><option value="">Vyberte tému</option><option>Mzda alebo pracovný čas</option><option>Pracovné podmienky / BOZP</option><option>Komunikácia alebo konflikt</option><option>Skončenie pracovného pomeru</option><option>Členstvo alebo spolupráca</option><option>Iné</option></select></label>
       <label>Čo sa stalo? <b>*</b><textarea name="message" rows="5" maxlength="3000" required placeholder="Čo sa stalo, kedy a čo potrebujete vyriešiť?"></textarea></label>
@@ -71,6 +76,7 @@
     <div class="records-empty" id="records-empty">Zatiaľ tu nie sú žiadne dotazy.</div>
     <div class="records-wrap"><table><thead><tr><th>Dátum</th><th>Kanál</th><th>Téma</th><th>Dotaz</th><th>Stav</th></tr></thead><tbody id="records-list"></tbody></table></div>
   </dialog>
-  <script src="config.js?v=ai-repair-20261010c"></script><script src="knowledge-base.js?v=ai-repair-20261010c"></script><script src="legal-engine.js?v=ai-repair-20261010c"></script><script src="ai-client.js?v=ai-repair-20261010c"></script><script src="app.js?v=ai-repair-20261010c"></script>
+  <script src="config.js?v=repairs-20261103-contact"></script><script src="knowledge-base.js?v=repairs-20261103-contact"></script><script src="legal-engine.js?v=repairs-20261103-contact"></script><script src="ai-client.js?v=repairs-20261103-contact"></script><script src="app.js?v=repairs-20261103-contact"></script>
 </body>
 </html>
+

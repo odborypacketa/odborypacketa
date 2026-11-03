@@ -141,7 +141,11 @@ function safeURL(value) {
   try { const url = new URL(value); return url.protocol === 'https:' && !url.username && !url.password && !url.hash; } catch { return false; }
 }
 function ready() { return config.internalStorageEnabled || (safeURL(config.queryEndpoint) && safeURL(config.privacyUrl) && config.turnstileSiteKey); }
-if (!ready()) status.textContent = 'Kontaktný formulár sa pripravuje. Zatiaľ neodosielajte osobné údaje.';
+contactForm.hidden = !ready();
+submitButton.disabled = !ready();
+document.querySelector('#contact-fallback').hidden = Boolean(ready());
+if (ready() && !config.internalStorageEnabled) document.querySelector('#contact-intro').textContent = 'Odoslaním sa dotaz uloží do evidencie a e-mailová služba ho odošle odborom. Výsledok odoslania sa zobrazí po prijatí. Neposielajte heslá, rodné číslo ani zdravotnú dokumentáciu.';
+if (!ready()) status.textContent = 'Použite priamy e-mail uvedený vyššie.';
 if (config.internalStorageEnabled) {
   document.querySelector('#mode-note').textContent = 'INTERNÝ TEST — používajte len vymyslené údaje. Evidencia zostáva v tomto prehliadači.';
   submitButton.textContent = 'Uložiť testovací dotaz';
@@ -194,3 +198,4 @@ if (config.internalStorageEnabled) {
   document.querySelector('#export-records').addEventListener('click', exportRecords);
   document.querySelector('#clear-records').addEventListener('click', () => { if (confirm('Vymazať všetky lokálne testovacie dotazy?')) { localStorage.removeItem(recordKey); renderRecords(); } });
 }
+
