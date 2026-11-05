@@ -1,0 +1,85 @@
+{
+  "question": "Ktoré návrhy na zlepšenie pracovných podmienok a benefitov podporujete?",
+  "options": [
+    "Každoročné zvyšovanie miezd najmenej o 3 %.",
+    "Automatický rast mzdy o 20 € mesačne za každý rok vo firme.",
+    "Jasný postup v mzdových stupňoch podľa praxe a zručností.",
+    "Trinásty plat vo výške priemernej mesačnej mzdy.",
+    "Príplatky za zastupovanie, viacprofesnosť, mentorstvo a vedenie.",
+    "5 platených sick days ročne už od nástupu.",
+    "Voľno navyše pri dôležitých životných udalostiach.",
+    "Vernostný bonus a viac dovolenky podľa rokov vo firme.",
+    "Príspevky pri narodení dieťaťa, svadbe, škole či úmrtí blízkeho.",
+    "Stravné v plnej hodnote a druhé stravné pri dlhej zmene.",
+    "Európsky dôchodok 30 € mesačne.",
+    "Multisport s úhradou najmenej 60 % ceny.",
+    "Rekreačný príspevok až 350 € ročne.",
+    "Vyššia odmena za odporučenie nového kolegu.",
+    "Príspevok na dopravu alebo bicykel.",
+    "Taxi či spoločná doprava po nočnej zmene.",
+    "Fyzioterapia alebo masáže do 200 € ročne.",
+    "Anonymné psychologické poradenstvo.",
+    "Lepšie pracovné oblečenie, obuv, ergonómia a platené regeneračné prestávky.",
+    "Školenia v pracovnom čase na náklady zamestnávateľa.",
+    "Odmena za novú kvalifikáciu 150 až 300 €.",
+    "Odmeny za zlepšovacie návrhy a nahlásené bezpečnostné riziká.",
+    "Rovnocenné benefity pre prevádzku aj centrálu.",
+    "Jasné pravidlá pre bonusy, hodnotenie a postup v práci."
+  ],
+  "sections": [
+    {
+      "title": "Mzda a odmeny",
+      "indices": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "title": "Voľno a rodina",
+      "indices": [
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    {
+      "title": "Bežné benefity",
+      "indices": [
+        9,
+        10,
+        11,
+        12,
+        13
+      ]
+    },
+    {
+      "title": "Zdravie, doprava a bezpečnosť",
+      "indices": [
+        14,
+        15,
+        16,
+        17,
+        18
+      ]
+    },
+    {
+      "title": "Rozvoj a férové podmienky",
+      "indices": [
+        19,
+        20,
+        21,
+        22,
+        23
+      ]
+    }
+  ],
+  "mode": "public",
+  "starts": 1794211200,
+  "ends": 1795075200,
+  "minimum": 10,
+  "maxChoices": 24
+}
