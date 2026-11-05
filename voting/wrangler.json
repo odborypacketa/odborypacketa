@@ -1,0 +1,55 @@
+{
+  "name": "odbory-anketa",
+  "main": "deployed-worker.mjs",
+  "account_id": "dde8dccbfe2518b94a6ea3fc6ce519c2",
+  "compatibility_date": "2026-11-05",
+  "workers_dev": false,
+  "preview_urls": false,
+  "assets": {
+    "directory": "../voting-static",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "routes": [
+    {
+      "pattern": "www.odborypacketa.eu/hlasovania*",
+      "zone_name": "odborypacketa.eu"
+    },
+    {
+      "pattern": "www.odborypacketa.eu/api/voting/*",
+      "zone_name": "odborypacketa.eu"
+    },
+    {
+      "pattern": "odborypacketa.eu/hlasovania*",
+      "zone_name": "odborypacketa.eu"
+    },
+    {
+      "pattern": "odborypacketa.eu/api/voting/*",
+      "zone_name": "odborypacketa.eu"
+    }
+  ],
+  "vars": {
+    "ENABLED": "true",
+    "PRIVACY_READY": "true",
+    "MEMBER_READY": "false",
+    "ORIGIN": "https://www.odborypacketa.eu",
+    "ACCESS_TEAM": "odd-credit-4384",
+    "ACCESS_AUD": "9102d43a2d938b06c956ebe465b7ead96e9b38550d6b3ffba5dafe929ea2b769",
+    "ADMIN_EMAILS": "odborypacketa@gmail.com"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "odbory-anketa-2026",
+      "database_id": "fd310711-3f47-455f-9b63-3d1393871461"
+    }
+  ],
+  "triggers": {
+    "crons": [
+      "*/10 * * * *"
+    ]
+  },
+  "observability": {
+    "enabled": false
+  }
+}

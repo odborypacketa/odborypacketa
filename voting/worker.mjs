@@ -30,7 +30,7 @@ async function admin(r,e){
  try{
  const [h,p,s,...extra]=jwt.split('.');if(extra.length)throw Error();const head=JSON.parse(new TextDecoder().decode(decode(h))), claims=JSON.parse(new TextDecoder().decode(decode(p)));
  const issuer=`https://${e.ACCESS_TEAM}.cloudflareaccess.com`,now=Date.now()/1000;
- if(head.alg!=='RS256'||claims.iss!==issuer||!Array.isArray(claims.aud)||!claims.aud.includes(e.ACCESS_AUD)||!(claims.exp>now)||!(claims.iat<=now+30)||(claims.nbf&&claims.nbf>now)||!claims.sub||!e.ADMIN_SUBJECTS.split(',').includes(claims.sub))throw Error();
+ if(head.alg!=='RS256'||claims.iss!==issuer||!Array.isArray(claims.aud)||!claims.aud.includes(e.ACCESS_AUD)||!(claims.exp>now)||!(claims.iat<=now+30)||(claims.nbf&&claims.nbf>now)||!claims.sub||!(e.ADMIN_EMAILS?typeof claims.email==='string'&&e.ADMIN_EMAILS.split(',').includes(claims.email.toLowerCase()):e.ADMIN_SUBJECTS?.split(',').includes(claims.sub)))throw Error();
  const res=await fetch(`${issuer}/cdn-cgi/access/certs`,{signal:AbortSignal.timeout(5000)});if(!res.ok)throw Error();const jwks=await res.json();const jwk=jwks.keys.find(k=>k.kid===head.kid&&k.kty==='RSA');if(!jwk)throw Error();
  const key=await crypto.subtle.importKey('jwk',jwk,{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['verify']);if(!await crypto.subtle.verify('RSASSA-PKCS1-v1_5',key,decode(s),enc.encode(`${h}.${p}`)))throw Error();
  return digest(claims.sub);
@@ -42,7 +42,7 @@ async function bot(d,e){
 }
 export async function handler(r,e){
  const u=new URL(r.url),path=u.pathname,method=r.method,db=e.DB;
- if(e.ENABLED!=='true'||e.PRIVACY_READY!=='true'||!db||!e.RATE_SECRET||e.RATE_SECRET.length<32||!e.TURNSTILE_SECRET||!e.ACCESS_TEAM||!e.ACCESS_AUD||!e.ADMIN_SUBJECTS)fail(503,'Hlasovanie zatiaľ nie je spustené.');
+ if(e.ENABLED!=='true'||e.PRIVACY_READY!=='true'||!db||!e.RATE_SECRET||e.RATE_SECRET.length<32||!e.TURNSTILE_SECRET||!e.ACCESS_TEAM||!e.ACCESS_AUD||!(e.ADMIN_SUBJECTS||e.ADMIN_EMAILS))fail(503,'Hlasovanie zatiaľ nie je spustené.');
  if(u.origin!==e.ORIGIN)fail(403,'Nepovolený hostiteľ.');
  if(!['GET','POST'].includes(method))fail(405,'Nepovolená metóda.');
  if(method==='POST'&&(r.headers.get('Origin')!==e.ORIGIN||r.headers.get('X-Vote-Request')!=='1'))fail(403,'Nepovolený pôvod požiadavky.');
@@ -101,7 +101,7 @@ export async function handler(r,e){
  await db.batch([...d.digests.map(hash=>db.prepare("INSERT INTO credentials(poll,digest) SELECT id,? FROM polls WHERE id=? AND status='draft'").bind(hash,id)),audit(db,actor,'credentials',id,p.version)]);return {ok:true};
  }
  else if(action==='open'){
- if(p.mode==='public')fail(409,'Verejná anketa sa spúšťa pri nasadení na 10 dní.');
+ if(p.mode==='public')fail(409,'Verejná anketa sa aktivuje podľa naplánovaného termínu pri nasadení.');
  if(p.mode==='member'&&e.MEMBER_READY!=='true')fail(403,'Členský režim nie je schválený.');
  stmt=db.prepare("UPDATE polls SET status='open',version=version+1 WHERE id=? AND status='draft' AND ends>unixepoch() AND version=?").bind(id,p.version);
  }else if(action==='close'){stmt=db.prepare("UPDATE polls SET status='closed',version=version+1 WHERE id=? AND status='open' AND ends<=unixepoch() AND version=?").bind(id,p.version);}
@@ -133,4 +133,4 @@ export default {async fetch(r,e){
  }
  return Response.json(await handler(r,e),{headers});
  }catch(error){return Response.json({error:error.status?error.message:'Služba nie je dostupná. Hlas nebol potvrdený.'},{status:error.status||503,headers});}
-},async scheduled(_,e){await e.DB.prepare("UPDATE polls SET status='closed',version=version+1 WHERE status='open' AND ends<=unixepoch()").run();await e.DB.prepare('DELETE FROM limits WHERE expires<unixepoch()').run();}};
+},async scheduled(_,e){await e.DB.prepare("UPDATE polls SET status='closed',version=version+1 WHERE status='open' AND ends<=unixepoch()").run();await e.DB.prepare('DELETE FROM limits WHERE expires<unixepoch()').run();for(const table of ['ballots','spent','credentials'])await e.DB.prepare(`DELETE FROM ${table} WHERE poll IN (SELECT id FROM polls WHERE ends+7776000<=unixepoch())`).run();}};
