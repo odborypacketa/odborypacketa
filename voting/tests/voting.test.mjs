@@ -40,3 +40,15 @@ test('scheduled retention removes responses and spent tokens only after approved
  DB.sql.prepare('UPDATE polls SET ends=? WHERE id=?').run(now-7776001,id);
  await worker.scheduled({},env(DB));assert.equal(DB.sql.prepare('SELECT COUNT(*) n FROM ballots').get().n,0);assert.equal(DB.sql.prepare('SELECT COUNT(*) n FROM spent').get().n,0);assert.equal(DB.sql.prepare('SELECT COUNT(*) n FROM polls').get().n,1);
 });
+test('public dashboard exposes only participation, not choices or notes; drafts and member polls stay private',async()=>{
+ const DB=db();seed(DB);const e=env(DB);DB.sql.prepare('INSERT INTO ballots(id,poll,choices,note) VALUES(?,?,?,?)').run('dashboard-response',id,'[0,1]','Neverejná poznámka');
+ const response=await worker.fetch(request(`polls/${id}/participation`),e);assert.equal(response.status,200);const data=await response.json();assert.equal(data.total,1);assert.equal(data.resultsAvailable,false);assert.equal(data.state,'open');assert.deepEqual(Object.keys(data).sort(),['id','total','starts','ends','state','resultsAvailable','checkedAt'].sort());assert.ok(!JSON.stringify(data).includes('Neverejná'));
+ assert.equal((await worker.fetch(request(`polls/${id}/results`),e)).status,404);
+ DB.sql.prepare("UPDATE polls SET status='draft'").run();assert.equal((await worker.fetch(request(`polls/${id}/participation`),e)).status,404);
+ DB.sql.prepare("UPDATE polls SET status='open',mode='member'").run();assert.equal((await worker.fetch(request(`polls/${id}/participation`),e)).status,404);
+});
+test('dashboard reports publication only after closure and never reports deleted answers as zero',async()=>{
+ const DB=db();seed(DB);const e=env(DB);DB.sql.prepare("UPDATE polls SET published=1").run();assert.equal((await (await worker.fetch(request(`polls/${id}/participation`),e)).json()).resultsAvailable,false);
+ DB.sql.prepare("UPDATE polls SET status='closed',ends=?").run(now-1);let data=await (await worker.fetch(request(`polls/${id}/participation`),e)).json();assert.equal(data.resultsAvailable,true);assert.equal(data.state,'ended');
+ DB.sql.prepare('UPDATE polls SET starts=?,ends=?').run(now-8000000,now-7776001);assert.equal((await worker.fetch(request(`polls/${id}/participation`),e)).status,410);
+});

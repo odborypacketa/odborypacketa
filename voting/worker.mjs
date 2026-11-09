@@ -49,6 +49,14 @@ export async function handler(r,e){
  const ip=r.headers.get('CF-Connecting-IP');if(!ip)fail(503,'Vyžaduje sa dôveryhodný proxy server.');
  await limit(db,await mac(e.RATE_SECRET,`${Math.floor(Date.now()/86400000)}:${ip}`),method==='GET'?120:20);
  if(path==='/api/voting/polls'&&method==='GET'){const {results}=await db.prepare("SELECT * FROM polls WHERE status!='draft' ORDER BY ends DESC LIMIT 100").all();return results.map(p=>({...p,options:JSON.parse(p.options),sections:JSON.parse(p.sections||'[]')}));}
+ const participation=path.match(/^\/api\/voting\/polls\/([0-9a-f-]{36})\/participation$/);
+ if(participation&&method==='GET'){
+ const p=await db.prepare('SELECT id,mode,status,starts,ends,published FROM polls WHERE id=?').bind(participation[1]).first();
+ if(!p||p.mode!=='public'||p.status==='draft')fail(404,'Anketa sa nenašla.');
+ const now=Math.floor(Date.now()/1000);if(now>=p.ends+7776000)fail(410,'Lehota uchovávania odpovedí uplynula.');
+ const {total}=await db.prepare('SELECT COUNT(*) AS total FROM ballots WHERE poll=?').bind(p.id).first();
+ return {id:p.id,total,starts:p.starts,ends:p.ends,state:now<p.starts?'scheduled':now>=p.ends?'ended':'open',resultsAvailable:now>=p.ends&&p.status==='closed'&&p.published===1,checkedAt:now};
+ }
  const match=path.match(/^\/api\/voting\/polls\/([0-9a-f-]{36})\/(vote|results)$/);
  if(match){const [,id,action]=match,p=await db.prepare('SELECT * FROM polls WHERE id=?').bind(id).first();if(!p||p.status==='draft')fail(404,'Hlasovanie sa nenašlo.');
  if(action==='results'&&method==='GET'){
