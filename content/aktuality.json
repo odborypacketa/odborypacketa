@@ -1,5 +1,38 @@
 [
   {
+    "date": "2026-11-10",
+    "id": "hlasovanie-priority-kolektivnej-zmluvy",
+    "title": "Spustili sme hlasovanie o prioritách kolektívnej zmluvy!",
+    "paragraphs": [
+      "**Tvoj názor môže pomôcť určiť, na čo sa zameriame pri kolektívnom vyjednávaní.**",
+      "V ZO Packeta Slovakia sme pripravili prvý návrh kolektívnej zmluvy. Teraz chceme dať priestor aj vám – zamestnancom, ktorých sa pracovné podmienky priamo týkajú.",
+      "**Spúšťame online hlasovanie, ktoré bude dostupné počas 10 dní.**",
+      "## O čom môžeš rozhodovať?",
+      "Zaujíma nás, ktoré oblasti považuješ za najdôležitejšie. Či už ide o odmeňovanie, pracovné zmeny, nadčasy, bezpečnosť, benefity alebo ďalšie podmienky každodennej práce.",
+      "**Hlasovanie je určené všetkým zamestnancom Packeta Slovakia – členom aj nečlenom odborovej organizácie.**",
+      "## Máš vlastný návrh? Napíš nám ho!",
+      "Ak medzi ponúkanými možnosťami nenájdeš tému, ktorú považuješ za dôležitú, **na konci ankety môžeš napísať vlastný návrh alebo požiadavku.**",
+      "Chceme poznať aj problémy a skúsenosti, ktoré by nám inak mohli uniknúť.",
+      "## Prečo sa zapojiť?",
+      "Výsledky hlasovania nám pomôžu lepšie určiť priority a pripraviť sa na rokovania so zamestnávateľom.",
+      "Samotné hlasovanie ešte neznamená, že všetky návrhy budú automaticky súčasťou kolektívnej zmluvy. Znamená však, že **pri príprave našich požiadaviek budeme vychádzať aj z vašich názorov.**",
+      "**10 dní. Tvoje priority. Náš spoločný hlas.**",
+      "**ZO Packeta Slovakia**",
+      "*Spoločne za férové pracovné podmienky.*"
+    ],
+    "image": {
+      "src": "content/images/hlasovanie-priority-2026-11-10.png",
+      "alt": "Spustili sme hlasovanie o prioritách kolektívnej zmluvy. 10 dní. Tvoje priority. Náš spoločný hlas.",
+      "width": 1672,
+      "height": 941
+    },
+    "cta": {
+      "label": "HLASUJ TERAZ",
+      "href": "/hlasovania/"
+    },
+    "deadline": "Hlasovanie prebieha od 9. 11. 2026 o 9:00 do 19. 11. 2026 o 9:00."
+  },
+  {
     "date": "2026-10-26",
     "title": "V práci sme možno nahraditeľní. Doma však nie. ❤️",
     "paragraphs": [
@@ -20,7 +53,8 @@
       "alt": "V práci sme možno nahraditeľní. Doma však nie. Kontrola BOZP na našu žiadosť 21. 10. 2026. Máte podnet? Ozvite sa nám.",
       "width": 1536,
       "height": 1024
-    }
+    },
+    "id": "bozp-2026-10-21"
   },
   {
     "date": "2026-10-01",
