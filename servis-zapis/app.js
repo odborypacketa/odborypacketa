@@ -23,7 +23,7 @@ const defaultFindings = [
 ];
 const blankState = () => ({
   meta:{ protocolDate:new Date().toISOString().slice(0,10), controlDate:'', timeFrom:'', timeTo:'', workplace:'', workplaceAddress:'', noticeDate:'', unionName:'Základná odborová organizácia pri Packeta Slovakia s. r. o.', unionAddress:'Strážska cesta 10406/28, 960 01 Zvolen', unionIco:'57 888 353', inspector:'', employer:'Packeta Slovakia s. r. o.', employerIco:'48 136 999', employerAddress:'Vajnorská 100/B, 831 04 Bratislava', employerPresent:'', reportDate:'', placeOfSigning:'Zvolen', workStop:'no', workStopText:''},
-  findings: defaultFindings.map(([point,category,title,finding,legalBasis,request,deadline])=>({id:crypto.randomUUID(),point,category,title,finding,legalBasis,request,deadline,evidence:'',employerResponse:'',photos:[]}))
+  findings: []
 });
 let state;
 let activeRecordId = null;
@@ -44,7 +44,7 @@ function render(){
   ${field('Odborová organizácia','unionName')}${field('Sídlo odborovej organizácie','unionAddress')}${field('IČO odborovej organizácie','unionIco')}
   ${field('Zamestnávateľ','employer')}${field('IČO zamestnávateľa','employerIco')}${field('Sídlo zamestnávateľa','employerAddress')}
   </section>
-  <section class="step" id="findings"><div class="section-head"><div><h2>3. Zistenia a požiadavky</h2><p>Každý bod musí oddeliť skutkové zistenie, právny základ, požadované opatrenie a lehotu.</p></div><button class="secondary add-finding" id="addFinding">Pridať bod</button></div><div class="notice">Šablóna obsahuje body z protokolu Žilina. Nepotrebné body odstráňte a text vždy doplňte podľa konkrétnej kontroly.</div><div id="findingsList"></div></section>
+  <section class="step" id="findings"><div class="section-head"><div><h2>3. Zistenia a požiadavky</h2><p>Každý bod musí oddeliť skutkové zistenie, právny základ, požadované opatrenie a lehotu.</p></div><button class="secondary add-finding" id="addFinding">Pridať bod</button></div><div class="notice">Nový protokol je prázdny. Každé zistenie pridajte tlačidlom „Pridať bod“ a vyplňte ho podľa konkrétnej kontroly.</div><div id="findingsList"></div></section>
   <section class="step" id="closing"><div class="section-head"><div><h2>4. Záver a podpis</h2><p>Vyberte, či odborový orgán požaduje prerušenie práce.</p></div></div>
   <div class="radio-group"><label><input type="radio" name="workStop" value="no" ${state.meta.workStop==='no'?'checked':''}> Prerušenie práce sa nepožaduje</label><label><input type="radio" name="workStop" value="yes" ${state.meta.workStop==='yes'?'checked':''}> Požaduje sa prerušenie práce</label></div>
   ${textField('Odôvodnenie prerušenia práce, ak sa požaduje','workStopText','')}
