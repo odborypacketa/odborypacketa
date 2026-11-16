@@ -7,7 +7,7 @@
   const input = document.querySelector('#accessPassword');
   const message = document.querySelector('#accessMessage');
   const encoder = new TextEncoder();
-  const openTool = () => { window.location.replace('protokol.html'); };
+  const openTool = () => { window.location.replace('/servis-zapis/protokol.html'); };
   const toBase64 = bytes => btoa(String.fromCharCode(...bytes));
   async function passwordHash(value) {
     const key = await crypto.subtle.importKey('raw', encoder.encode(value), 'PBKDF2', false, ['deriveBits']);
