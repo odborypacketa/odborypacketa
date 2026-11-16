@@ -10,13 +10,14 @@
 <body>
   <header class="topbar">
     <div><span class="eyebrow">ZO PACKETA SLOVAKIA</span><h1>BOZP protokol</h1></div>
-    <div class="actions"><button class="secondary" id="saveDraft">Uložiť rozpracované</button><button class="primary" id="printPdf">Stiahnuť PDF</button></div>
+    <div class="actions"><button class="secondary" id="saveDraft">Uložiť zápis</button><button class="primary" id="printPdf">Stiahnuť PDF</button></div>
   </header>
   <main class="layout">
     <aside class="sidebar">
       <p class="intro">Vyplňte údaje z kontroly. Náhľad sa priebežne pripravuje do podoby protokolu.</p>
       <nav id="sectionNav"></nav>
       <button class="secondary full" id="newProtocol">Nový protokol</button>
+      <div class="records"><strong>Uložené zápisy</strong><div id="recordsList"></div></div>
       <label class="import-label">Načítať rozpracované<input id="importJson" type="file" accept="application/json"></label>
       <button class="link-button" id="exportJson">Stiahnuť rozpracované (.json)</button>
       <p class="privacy">Údaje zostávajú v tomto prehliadači, kým ich neodošlete alebo nevymažete.</p>
