@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="sk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Generátor protokolu z kontroly BOZP pre ZO Packeta Slovakia">
+  <title>BOZP protokol - ZO Packeta</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div><span class="eyebrow">ZO PACKETA SLOVAKIA</span><h1>BOZP protokol</h1></div>
+    <div class="actions"><button class="secondary" id="saveDraft">Uložiť rozpracované</button><button class="primary" id="printPdf">Stiahnuť PDF</button></div>
+  </header>
+  <main class="layout">
+    <aside class="sidebar">
+      <p class="intro">Vyplňte údaje z kontroly. Náhľad sa priebežne pripravuje do podoby protokolu.</p>
+      <nav id="sectionNav"></nav>
+      <button class="secondary full" id="newProtocol">Nový protokol</button>
+      <label class="import-label">Načítať rozpracované<input id="importJson" type="file" accept="application/json"></label>
+      <button class="link-button" id="exportJson">Stiahnuť rozpracované (.json)</button>
+      <p class="privacy">Údaje zostávajú v tomto prehliadači, kým ich neodošlete alebo nevymažete.</p>
+    </aside>
+    <section class="editor" id="editor"></section>
+  </main>
+  <template id="findingTemplate">
+    <article class="finding-card">
+      <header><span class="finding-number"></span><button type="button" class="remove">Odstrániť</button></header>
+      <div class="two-columns">
+        <label>Číslo bodu<input data-field="point" placeholder="napr. 7"></label>
+        <label>Kategória<select data-field="category"><option value="urgent">A - bezodkladné opatrenie</option><option value="process">B - postupy a organizácia</option><option value="documents">C - doklady a posúdenia</option></select></label>
+      </div>
+      <label>Názov zistenia<input data-field="title" placeholder="Stručný názov zistenia"></label>
+      <label>Zistenie<textarea data-field="finding" rows="4" placeholder="Čo bolo na mieste zistené; kto čo uviedol; na aké dôkazy sa odkazujete."></textarea></label>
+      <label>Právny základ<input data-field="legalBasis" placeholder="Predpis a konkrétne ustanovenie, ak je známe"></label>
+      <label>Požiadavka odborového orgánu<textarea data-field="request" rows="3" placeholder="Aké konkrétne opatrenie alebo doklad sa požaduje."></textarea></label>
+      <div class="two-columns">
+        <label>Lehota<input data-field="deadline" placeholder="napr. do 7 pracovných dní od doručenia"></label>
+        <label>Označenie dôkazu<input data-field="evidence" placeholder="napr. foto 3, zápis, vyjadrenie"></label>
+      </div>
+      <label>Vyjadrenie zamestnávateľa (nepovinné)<textarea data-field="employerResponse" rows="3" placeholder="Opatrenie, termín a zodpovedná osoba."></textarea></label>
+      <label class="photo-input">Fotodokumentácia (nepovinné)<input data-field="photos" type="file" accept="image/*" multiple><span class="photo-note">Fotky sa zobrazia vo finálnej prílohe PDF.</span></label>
+      <div class="photo-list"></div>
+    </article>
+  </template>
+  <script src="app.js"></script>
+</body>
+</html>
