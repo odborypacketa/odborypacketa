@@ -7,7 +7,19 @@
   <title>BOZP protokol - ZO Packeta</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="locked">
+  <div id="pageLock" class="access-gate">
+    <form id="accessForm" class="access-card">
+      <img class="access-logo" src="zo-packeta-slovakia.png?v=20261116" alt="ZO Packeta Slovakia">
+      <span class="eyebrow">PRACOVNÝ NÁSTROJ</span>
+      <h2>BOZP protokol</h2>
+      <p>Zadajte prístupové heslo.</p>
+      <label>Heslo<input id="accessPassword" type="password" autocomplete="current-password" required></label>
+      <p id="accessMessage" class="access-message" aria-live="polite"></p>
+      <button class="primary full" type="submit">Otvoriť nástroj</button>
+    </form>
+  </div>
+  <script src="access-gate.js"></script>
   <header class="topbar">
     <div class="brand"><img id="brandLogo" class="brand-logo" src="zo-packeta-slovakia.png?v=20261116" width="173" height="59" alt="ZO Packeta Slovakia"><div><span class="eyebrow">PRACOVNÝ NÁSTROJ</span><h1>BOZP protokol</h1></div></div>
     <div class="actions"><button class="secondary" id="saveDraft">Uložiť zápis</button><button class="primary" id="printPdf">Stiahnuť PDF</button></div>
