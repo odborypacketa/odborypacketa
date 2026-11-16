@@ -15,6 +15,12 @@ articles=[]
 for item in sorted(items, key=lambda x:x['date'], reverse=True):
     date=datetime.date.fromisoformat(item['date'])
     body=''.join(paragraph(p) for p in item['paragraphs'])
+    if item.get('symbolicProgress'):
+        graphic=item['symbolicProgress']
+        body=('<figure class="effort-graphic"><p class="effort-brand">ZO Packeta Slovakia</p>'
+              '<p class="effort-title">'+html.escape(graphic['title'])+'</p>'
+              '<div class="effort-track" aria-hidden="true"><span></span></div>'
+              '<figcaption>Symbolické znázornenie spoločného úsilia</figcaption></figure>')+body
     if item.get('cta'):
         cta=item['cta']
         button='<p><a class="cta" href="'+html.escape(cta['href'], quote=True)+'">'+html.escape(cta['label'])+'</a></p>'

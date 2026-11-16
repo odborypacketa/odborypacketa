@@ -1,5 +1,30 @@
 [
   {
+    "date": "2026-11-16",
+    "id": "vy-ste-nas-prekvapili",
+    "title": "VY STE NÁS PREKVAPILI. A TO EŠTE NIE JE KONIEC! 🗳️",
+    "symbolicProgress": {
+      "title": "MYSLELI SME SI, ŽE JE TO LEN SEN. TERAZ SME TAKMER TAM."
+    },
+    "paragraphs": [
+      "Keď sme spúšťali hlasovanie o prioritách kolektívnej zmluvy, mali sme predstavu, koľko zamestnancov by sa mohlo zapojiť.",
+      "**Dnes sa približujeme k výsledku, v ktorý sme na začiatku len dúfali.**",
+      "A viete, čo je na tom najlepšie?",
+      "**EŠTE STÁLE HO MÔŽEME PREKONAŤ!**",
+      "Každý ďalší hlas nám pomáha lepšie pochopiť, čo zamestnanci Packety skutočne považujú za dôležité.",
+      "Ak si už hlasoval, ďakujeme. Ak ešte nie, **práve teraz je ten správny čas zapojiť sa.**",
+      "A ak máš kolegu, ktorý o hlasovaní ešte nevie, povedz mu o ňom. Hlasovanie je určené všetkým zamestnancom – členom aj nečlenom odborov.",
+      "**Poďme spoločne prekonať naše očakávania!**",
+      "**ZO Packeta Slovakia**",
+      "*Spoločne za férové pracovné podmienky.*"
+    ],
+    "cta": {
+      "label": "HLASUJ AJ TY",
+      "href": "/hlasovania/"
+    },
+    "deadline": "Hlasovanie prebieha do 19. 11. 2026 o 9:00 slovenského času."
+  },
+  {
     "date": "2026-11-10",
     "id": "hlasovanie-priority-kolektivnej-zmluvy",
     "title": "Spustili sme hlasovanie o prioritách kolektívnej zmluvy!",
