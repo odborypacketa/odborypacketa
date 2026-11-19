@@ -52,3 +52,12 @@ test('dashboard reports publication only after closure and never reports deleted
  DB.sql.prepare("UPDATE polls SET status='closed',ends=?").run(now-1);let data=await (await worker.fetch(request(`polls/${id}/participation`),e)).json();assert.equal(data.resultsAvailable,true);assert.equal(data.state,'ended');
  DB.sql.prepare('UPDATE polls SET starts=?,ends=?').run(now-8000000,now-7776001);assert.equal((await worker.fetch(request(`polls/${id}/participation`),e)).status,410);
 });
+test('public notes expose only reviewed summaries after publication, threshold and before retention',async()=>{
+ const DB=db(),poll='f4305b6f-2917-424a-bc0c-bcecb2bdddfa';seed(DB);DB.sql.prepare('UPDATE polls SET id=?').run(poll);const e=env(DB),get=()=>worker.fetch(request(`polls/${poll}/notes`),e);
+ assert.equal((await get()).status,404);
+ for(let i=0;i<10;i++)DB.sql.prepare('INSERT INTO ballots(id,poll,choices,note) VALUES(?,?,?,?)').run(String(i),poll,'[0]','PRIVATE_RAW_NOTE');
+ DB.sql.prepare("UPDATE polls SET published=1").run();assert.equal((await get()).status,404);
+ DB.sql.prepare("UPDATE polls SET status='closed',ends=?").run(now-1);const response=await get();assert.equal(response.status,200);const data=await response.json();assert.equal(data.submitted,19);assert.equal(data.notes.length,18);assert.ok(!JSON.stringify(data).includes('PRIVATE_RAW_NOTE'));
+ DB.sql.prepare('DELETE FROM ballots WHERE id=?').run('9');assert.equal((await get()).status,404);
+ DB.sql.prepare('UPDATE polls SET starts=?,ends=?').run(now-8000000,now-7776001);assert.equal((await get()).status,410);
+});

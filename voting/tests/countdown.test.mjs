@@ -22,6 +22,7 @@ test('deployment stores fixed scheduled start once; reload/redeploy cannot exten
  db.prepare('INSERT INTO polls(id,question,options,mode,starts,ends,minimum) VALUES(?,?,?,?,?,?,?)').run(id,'Test','["A","B"]','public',1,2,10);
  const script=readFileSync(new URL('../activate-deployment.mjs',import.meta.url),'utf8');
  const {starts,ends}=JSON.parse(readFileSync(new URL('../schedule.json',import.meta.url),'utf8'));
+ db.function('unixepoch',()=>starts-3600); // Model deployment before opening, independent of today's date.
  const sql=script.match(/writeFileSync\(file,`([\s\S]*?)`\);/)[1].replaceAll('${poll}',id).replaceAll('${starts}',String(starts)).replaceAll('${ends}',String(ends)).replaceAll('\\n','\n');
  db.exec(sql);const first=db.prepare('SELECT * FROM polls').get();assert.equal(first.status,'open');assert.equal(first.ends-first.starts,864000);assert.equal(first.starts,starts);assert.equal(first.ends,ends);assert.ok(first.deployed_at);
  db.exec(sql);assert.deepEqual(db.prepare('SELECT * FROM polls').get(),first);assert.equal(db.prepare('SELECT COUNT(*) AS n FROM audit').get().n,1);

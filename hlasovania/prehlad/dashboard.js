@@ -1,6 +1,6 @@
 const POLL='f4305b6f-2917-424a-bc0c-bcecb2bdddfa';
 const $=id=>document.getElementById(id),date=value=>new Date(value*1000).toLocaleString('sk-SK',{timeZone:'Europe/Bratislava',day:'numeric',month:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
-let snapshot=null,base=0,tick=0,busy=false,renderedResults=false;
+let snapshot=null,base=0,tick=0,busy=false,renderedResults=false,renderedNotes=false;
 const node=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
 async function api(path){
  const r=await fetch('/api/voting/'+path,{cache:'no-store',credentials:'omit',signal:AbortSignal.timeout(12000)});
@@ -27,9 +27,15 @@ async function showResults(){
  }fragment.append(group);}
  $('results').replaceChildren(fragment);$('results-badge').textContent='Zverejnené';$('results-note').textContent=`Súhrn z ${data.total.toLocaleString('sk-SK')} odpovedí. Percentá vyjadrujú podiel odpovedí, ktoré označili daný návrh. Keďže bolo možné vybrať viac možností, súčet percent môže presiahnuť 100 %.`;renderedResults=true;
 }
+async function showNotes(){
+ if(!snapshot.resultsAvailable||!renderedResults||renderedNotes)return;
+ const data=await api(`polls/${POLL}/notes`);const list=document.createDocumentFragment();
+ for(const text of data.notes){list.append(node('li',text));}
+ $('free-notes').replaceChildren(list);$('notes-description').textContent=data.description;$('notes-panel').hidden=false;renderedNotes=true;
+}
 async function refresh(){
  if(busy)return;busy=true;$('refresh').disabled=true;
- try{const data=await api(`polls/${POLL}/participation`);if(!Number.isInteger(data.total)||data.total<0||!Number.isInteger(data.checkedAt))throw Error('Server vrátil neplatné údaje.');snapshot=data;base=data.checkedAt;tick=performance.now();$('total').textContent=data.total.toLocaleString('sk-SK');$('dates').textContent=`${date(data.starts)} – ${date(data.ends)}`;$('updated').textContent=`Overené ${date(data.checkedAt)} · Obnova každú minútu`;$('error').hidden=true;countdown();await showResults();}
+ try{const data=await api(`polls/${POLL}/participation`);if(!Number.isInteger(data.total)||data.total<0||!Number.isInteger(data.checkedAt))throw Error('Server vrátil neplatné údaje.');snapshot=data;base=data.checkedAt;tick=performance.now();$('total').textContent=data.total.toLocaleString('sk-SK');$('dates').textContent=`${date(data.starts)} – ${date(data.ends)}`;$('updated').textContent=`Overené ${date(data.checkedAt)} · Obnova každú minútu`;$('error').hidden=true;countdown();await showResults();await showNotes();}
  catch(e){$('error').textContent=`${e.message||'Spojenie nie je dostupné.'} ${snapshot?'Zobrazené údaje pochádzajú z poslednej úspešnej kontroly.':'Počet odpovedí zatiaľ nevieme overiť.'}`;$('error').hidden=false;}
  finally{busy=false;$('refresh').disabled=false;}
 }
