@@ -1,3 +1,4 @@
+import {reviewedNotes} from './reviewed-notes.mjs';
 export function validateNote(value){
  if(value===undefined)return '';
  if(typeof value!=='string'||value.length>1500||/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value))throw Object.assign(new Error('Poznámka môže mať najviac 1 500 znakov.'),{status:400});
@@ -49,8 +50,23 @@ export async function handler(r,e){
  const ip=r.headers.get('CF-Connecting-IP');if(!ip)fail(503,'Vyžaduje sa dôveryhodný proxy server.');
  await limit(db,await mac(e.RATE_SECRET,`${Math.floor(Date.now()/86400000)}:${ip}`),method==='GET'?120:20);
  if(path==='/api/voting/polls'&&method==='GET'){const {results}=await db.prepare("SELECT * FROM polls WHERE status!='draft' ORDER BY ends DESC LIMIT 100").all();return results.map(p=>({...p,options:JSON.parse(p.options),sections:JSON.parse(p.sections||'[]')}));}
- const match=path.match(/^\/api\/voting\/polls\/([0-9a-f-]{36})\/(vote|results)$/);
+ const participation=path.match(/^\/api\/voting\/polls\/([0-9a-f-]{36})\/participation$/);
+ if(participation&&method==='GET'){
+ const p=await db.prepare('SELECT id,mode,status,starts,ends,published FROM polls WHERE id=?').bind(participation[1]).first();
+ if(!p||p.mode!=='public'||p.status==='draft')fail(404,'Anketa sa nenašla.');
+ const now=Math.floor(Date.now()/1000);if(now>=p.ends+7776000)fail(410,'Lehota uchovávania odpovedí uplynula.');
+ const {total}=await db.prepare('SELECT COUNT(*) AS total FROM ballots WHERE poll=?').bind(p.id).first();
+ return {id:p.id,total,starts:p.starts,ends:p.ends,state:now<p.starts?'scheduled':now>=p.ends?'ended':'open',resultsAvailable:now>=p.ends&&p.status==='closed'&&p.published===1,checkedAt:now};
+ }
+ const match=path.match(/^\/api\/voting\/polls\/([0-9a-f-]{36})\/(vote|results|notes)$/);
  if(match){const [,id,action]=match,p=await db.prepare('SELECT * FROM polls WHERE id=?').bind(id).first();if(!p||p.status==='draft')fail(404,'Hlasovanie sa nenašlo.');
+ if(action==='notes'&&method==='GET'){
+ if(p.mode!=='public'||id!==reviewedNotes.poll||!p.published||p.status!=='closed'||Date.now()/1000<p.ends)fail(404,'Poznámky nie sú zverejnené.');
+ if(Date.now()/1000>=p.ends+7776000)fail(410,'Lehota uchovávania odpovedí uplynula.');
+ const {total}=await db.prepare('SELECT COUNT(*) AS total FROM ballots WHERE poll=?').bind(id).first();
+ if(total<p.minimum)fail(404,'Poznámky nie sú zverejnené.');
+ return {submitted:reviewedNotes.submitted,omittedNonText:reviewedNotes.omittedNonText,description:reviewedNotes.description,notes:reviewedNotes.notes};
+ }
  if(action==='results'&&method==='GET'){
  if(!p.published||p.status!=='closed'||Date.now()/1000<p.ends)fail(404,'Výsledky nie sú zverejnené.');
  const {total}=await db.prepare('SELECT COUNT(*) AS total FROM ballots WHERE poll=?').bind(id).first();const {results}=await db.prepare('SELECT j.value AS choice,COUNT(*) AS count FROM ballots b,json_each(b.choices) j WHERE b.poll=? GROUP BY j.value').bind(id).all();if(total<p.minimum)return {suppressed:true,message:'Výsledky sa nezverejnia pre malý počet hlasov.'};return {total,counts:JSON.parse(p.options).map((_,i)=>results.find(x=>x.choice===i)?.count||0)};
