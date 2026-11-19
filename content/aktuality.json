@@ -2,43 +2,35 @@
   {
     "date": "2026-11-16",
     "id": "vy-ste-nas-prekvapili",
-    "title": "VY STE NÁS PREKVAPILI. A TO EŠTE NIE JE KONIEC! 🗳️",
+    "title": "Hlasovanie o prioritách kolektívnej zmluvy sa skončilo",
     "symbolicProgress": {
       "title": "MYSLELI SME SI, ŽE JE TO LEN SEN. TERAZ SME TAKMER TAM."
     },
     "paragraphs": [
+      "**Aktualizácia: Hlasovanie sa skončilo 19. 11. 2026 o 9:00. Ďakujeme všetkým, ktorí sa zapojili.**",
       "Keď sme spúšťali hlasovanie o prioritách kolektívnej zmluvy, mali sme predstavu, koľko zamestnancov by sa mohlo zapojiť.",
-      "**Dnes sa približujeme k výsledku, v ktorý sme na začiatku len dúfali.**",
-      "A viete, čo je na tom najlepšie?",
-      "**EŠTE STÁLE HO MÔŽEME PREKONAŤ!**",
-      "Každý ďalší hlas nám pomáha lepšie pochopiť, čo zamestnanci Packety skutočne považujú za dôležité.",
-      "Ak si už hlasoval, ďakujeme. Ak ešte nie, **práve teraz je ten správny čas zapojiť sa.**",
-      "A ak máš kolegu, ktorý o hlasovaní ešte nevie, povedz mu o ňom. Hlasovanie je určené všetkým zamestnancom – členom aj nečlenom odborov.",
-      "**Poďme spoločne prekonať naše očakávania!**",
+      "**V priebehu hlasovania sme sa približovali k výsledku, v ktorý sme na začiatku len dúfali.**",
+      "Každý hlas nám pomáha lepšie pochopiť, čo zamestnanci Packety skutočne považujú za dôležité.",
       "**ZO Packeta Slovakia**",
       "*Spoločne za férové pracovné podmienky.*"
-    ],
-    "cta": {
-      "label": "HLASUJ AJ TY",
-      "href": "/hlasovania/"
-    },
-    "deadline": "Hlasovanie prebieha do 19. 11. 2026 o 9:00 slovenského času."
+    ]
   },
   {
     "date": "2026-11-10",
     "id": "hlasovanie-priority-kolektivnej-zmluvy",
     "title": "Spustili sme hlasovanie o prioritách kolektívnej zmluvy!",
     "paragraphs": [
+      "**Aktualizácia: Hlasovanie sa skončilo 19. 11. 2026 o 9:00. Ďakujeme všetkým, ktorí sa zapojili.**",
       "**Tvoj názor môže pomôcť určiť, na čo sa zameriame pri kolektívnom vyjednávaní.**",
       "V ZO Packeta Slovakia sme pripravili prvý návrh kolektívnej zmluvy. Teraz chceme dať priestor aj vám – zamestnancom, ktorých sa pracovné podmienky priamo týkajú.",
-      "**Spúšťame online hlasovanie, ktoré bude dostupné počas 10 dní.**",
-      "## O čom môžeš rozhodovať?",
+      "**Online hlasovanie prebiehalo počas 10 dní.**",
+      "## O čom bolo hlasovanie?",
       "Zaujíma nás, ktoré oblasti považuješ za najdôležitejšie. Či už ide o odmeňovanie, pracovné zmeny, nadčasy, bezpečnosť, benefity alebo ďalšie podmienky každodennej práce.",
       "**Hlasovanie je určené všetkým zamestnancom Packeta Slovakia – členom aj nečlenom odborovej organizácie.**",
-      "## Máš vlastný návrh? Napíš nám ho!",
-      "Ak medzi ponúkanými možnosťami nenájdeš tému, ktorú považuješ za dôležitú, **na konci ankety môžeš napísať vlastný návrh alebo požiadavku.**",
+      "## Vlastné návrhy",
+      "Ak medzi ponúkanými možnosťami nenájdeš tému, ktorú považuješ za dôležitú, **na konci ankety bolo možné napísať vlastný návrh alebo požiadavku.**",
       "Chceme poznať aj problémy a skúsenosti, ktoré by nám inak mohli uniknúť.",
-      "## Prečo sa zapojiť?",
+      "## Prečo bolo hlasovanie dôležité?",
       "Výsledky hlasovania nám pomôžu lepšie určiť priority a pripraviť sa na rokovania so zamestnávateľom.",
       "Samotné hlasovanie ešte neznamená, že všetky návrhy budú automaticky súčasťou kolektívnej zmluvy. Znamená však, že **pri príprave našich požiadaviek budeme vychádzať aj z vašich názorov.**",
       "**10 dní. Tvoje priority. Náš spoločný hlas.**",
@@ -50,12 +42,7 @@
       "alt": "Spustili sme hlasovanie o prioritách kolektívnej zmluvy. 10 dní. Tvoje priority. Náš spoločný hlas.",
       "width": 1672,
       "height": 941
-    },
-    "cta": {
-      "label": "HLASUJ TERAZ",
-      "href": "/hlasovania/"
-    },
-    "deadline": "Hlasovanie prebieha od 9. 11. 2026 o 9:00 do 19. 11. 2026 o 9:00."
+    }
   },
   {
     "date": "2026-10-26",
