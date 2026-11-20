@@ -32,7 +32,11 @@ for item in sorted(items, key=lambda x:x['date'], reverse=True):
     anchor=' id="'+html.escape(item['id'],quote=True)+'"' if item.get('id') else ''
     articles.append(f'<article class="news-article"{anchor}><time datetime="{date.isoformat()}">{date.day}. {date.month}. {date.year}</time><h3>{html.escape(item["title"])}</h3>{body}</article>')
 p=root/'index.html';source=p.read_text()
-pattern=r'(<div id="news">).*?(</div></div></section><section id="ako-fungujeme")'
+pattern=r'(<div id="news">).*?(</div><p id="news-empty")'
+existing_ids=set(re.findall(r'<article class="news-article" id="([^"]+)"', re.search(pattern, source, flags=re.S).group(0)))
+json_ids={item.get('id') for item in items}
+if existing_ids - json_ids:
+    raise SystemExit('Aktuality v index.html nie sú všetky v JSON; doplňte ich pred generovaním, aby sa nestratili.')
 source,count=re.subn(pattern, lambda m:m[1]+''.join(articles)+m[2],source,flags=re.S)
 assert count==1, 'News region not found uniquely'
 p.write_text(source)
